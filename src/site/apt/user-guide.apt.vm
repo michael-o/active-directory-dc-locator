@@ -1,0 +1,41 @@
+#*
+ * Copyright 2025 Michael Osipov
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *#
+
+                            ----------------------
+                                 User Guide
+                            ----------------------
+                               Michael Osipov
+                            ----------------------
+                                 2025-05-07
+                            ----------------------
+
+User Guide
+
+  To make use of this library you must run at least Java $context.get("maven.compiler.target").
+
+  This site will guide you through the components of this library:
+
+  [[1]] {{{./dc-locator-core.html}Active Directory DC Locator Core}}: The main component performing
+        DNS SRV lookups, LDAP pings or both combined in the DC locator process. You will need this only
+        if you want to perform low-level requests/operations/testing.
+
+  [[2]] {{{./ldap-dns-provider.html}Active Directory JNDI/LDAP DNS Provider Implementation}}:
+        An implementation of the
+        {{{https://github.com/openjdk/jdk8u/blob/9489021989a4ef81a2fde17ccdd872215586f6cd/jdk/src/share/classes/com/sun/jndi/ldap/spi/LdapDnsProvider.java}<<<LdapDnsProvider>>>}}
+        which wraps the DC locator from above and plugs into the JNDI/LDAP DNS service provider system.
+
+  []
+

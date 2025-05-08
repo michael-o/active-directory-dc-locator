@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Copyright 2016–2025 Michael Osipov
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>net.sf.michael-o.active-directory</groupId>
+		<artifactId>active-directory-dc-locator</artifactId>
+		<version>0.5.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>active-directory-jndi-ldap-dns-provider</artifactId>
+	<packaging>jar</packaging>
+
+	<name>Active Directory JNDI/LDAP DNS Provider Implementation</name>
+	<description>An Active Directory LDAP DNS provider implementation for JNDI.</description>
+
+	<dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>active-directory-dc-locator-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>delete-dependency-reduced-pom</id>
+						<goals>
+							<goal>clean</goal>
+						</goals>
+						<phase>clean</phase>
+						<configuration>
+							<filesets>
+								<filesets>
+									<directory>${basedir}</directory>
+									<includes>
+										<include>dependency-reduced-pom.xml</include>
+									</includes>
+								</filesets>
+							</filesets>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>generate-java12</id>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<phase>generate-sources</phase>
+						<configuration>
+							<target>
+								<mkdir dir="${project.build.directory}/generated-sources12"/>
+								<copy todir="${project.build.directory}/generated-sources12">
+									<fileset dir="src/main/java">
+										<include name="**/ActiveDirectoryLdapDnsProvider.java"/>
+									</fileset>
+									<filterchain>
+										<tokenfilter>
+											<replacestring from="com.sun.jndi.ldap.spi" to="javax.naming.ldap.spi"/>
+											<replacestring from="@SuppressWarnings(&quot;restriction&quot;)"/>
+										</tokenfilter>
+									</filterchain>
+								</copy>
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<jdkToolchain>
+						<version>${maven.compiler.target}</version>
+					</jdkToolchain>
+				</configuration>
+				<executions>
+					<execution>
+						<id>compile-java12</id>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+						<configuration>
+							<release>12</release>
+							<jdkToolchain>
+								<version>[12,)</version>
+							</jdkToolchain>
+							<compileSourceRoots>
+								<compileSourceRoot>${project.build.directory}/generated-sources12</compileSourceRoot>
+							</compileSourceRoots>
+							<multiReleaseOutput>true</multiReleaseOutput>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifestEntries>
+							<Multi-Release>true</Multi-Release>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-shade-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<phase>package</phase>
+						<configuration>
+							<artifactSet>
+								<includes>
+									<include>${project.groupId}:active-directory-dc-locator-core</include>
+								</includes>
+							</artifactSet>
+							<filters>
+								<filter>
+									<artifact>${project.groupId}:active-directory-dc-locator-core</artifact>
+									<excludes>
+										<exclude>META-INF/MANIFEST.MF</exclude>
+									</excludes>
+								</filter>
+							</filters>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

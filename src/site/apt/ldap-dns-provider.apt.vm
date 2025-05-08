@@ -1,0 +1,132 @@
+#*
+ * Copyright 2025 Michael Osipov
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *#
+
+                            ----------------------
+         Using Active Directory JNDI/LDAP DNS Provider Implementation
+                            ----------------------
+                               Michael Osipov
+                            ----------------------
+                                 2025-05-07
+                            ----------------------
+
+#set($ellipsis = $esc.unicode('\u2026'))
+
+Using Active Directory JNDI/LDAP DNS Provider Implementation
+
+    [Attention] This library must reside in the <<system>> class path for this provider to work
+                properly and requires at least Java 8u272, Java 11.0.9, or Java 12+. It is a
+                multi-release JAR because of changing interfaces between Java releases. It shades
+                the DC locator core, so only one JAR is required on the class path.
+
+  No configuration is necessary, it will be autodiscovered through Java's <<<ServiceLoader>>>.
+  For the ease of use you can go with my {{{https://michael-o.github.io/dirctxsrc/}<<<DirContextSource>>>}},
+  but you can also go with plain JNDI if you prefer. You may pass specific environment properties
+  through the directory context, see
+  {{{./active-directory-jndi-ldap-dns-provider/apidocs/net/sf/michaelo/activedirectory/ActiveDirectoryLdapDnsProvider.html}Javadoc}} for details.
+
+    [Tip] It is highly recommended to set a read timeout through environment properties to avoid
+          indefinite read waits which will lock up your thread/process.
+
+* Supported URL Formats
+
+  This provider supports the following URL formats:
+
+  * <<<ldap(s):///>>>: No domain name provided, your local host's domain name will be used to locate
+    a suitable domain controller. <<<ldaps>>> will use TLS.
+
+  * <<<gc(s):///>>>: No <<forest>> name provided, your local host's domain name will be used to locate
+    a suitable domain controller which hosts the global catalog in your forest. <<<gcs>>> will use TLS.
+
+  * <<<ldap(s)://example.com>>>: Will use the supplied domain name to locate a suitable domain controller.
+    <<<ldaps>>> will use TLS.
+
+  * <<<gc(s)://example.com>>>: Will use the supplied <<forest>> name to locate a suitable domain
+    controller which hosts the global catalog in your forest. <<<gcs>>> will use TLS.
+
+  * <<<ldap(s)://example.com:\{port\}>>>: Identical to the <<<ldap(s)://example.com>>>, but with a port
+    and will respect the GC ports (3268/3269) and imply <<<gc(s)://example.com>>>.
+
+  * <<<ldap(s):///ou=foo,dc=example,dc=com>>>: No domain name provided, the domain components (DCs)
+    from the path will be used to locate a suitable domain controller. <<<ldaps>>> will use TLS.
+
+  * <<<gc(s):///ou=foo,dc=example,dc=com>>>: No <<forest>> name provided, the domain components (DCs)
+    from the path will be used to locate a suitable domain controller which hosts the global catalog
+    in your forest. <<<gcs>>> will use TLS.
+
+  * <<<ldap(s)://host.example.com>>>: Discovery <<will fail>> with a host name, the URL will be
+    returned as-is.
+
+  []
+
+  Note: If both domain/forest name and a path are provided the name takes precedence.
+
+* Examples
+
+** In Java
+
+  In few lines you have a usable <<<DirContextSource>>>:
+
++----------------------------
+import net.sf.michaelo.dirctxsrc.DirContextSource;
+import javax.naming.directory.DirContext;
+[$ellipsis]
+DirContextSource.Builder builder = new DirContextSource.Builder("ldap:///");
+// Make it fail fast
+builder.connectTimeout(500).readTimeout(500);
+builder.additionalProperty("net.sf.michaelo.activedirectory.readTimeout", "500");
+
+DirContextSource contextSource = builder.build();
+// try and catch block omitted for the sake of brevity,
+// handle NamingException appropriately
+DirContext context = contextSource.getDirContext();
+// Perform operations
+context.close();
+[$ellipsis]
++----------------------------
+
+** In a Servlet Container (Apache Tomcat)
+
+  Navigate in your <<<server.xml>>> to <<</Server/GlobalNamingResources>>> and
+  add the following element:
+
++----------------------------
+[$ellipsis]
+<GlobalNamingResources>
+  <!-- Add this -->
+  <Resource name="ldap/default" type="net.sf.michaelo.dirctxsrc.DirContextSource"
+    factory="net.sf.michaelo.dirctxsrc.DirContextSourceFactory"
+    urls="ldap:///" connectTimeout="500" readTimeout="500"
+    additionalProperties="net.sf.michaelo.activedirectory.readTimeout=500" />
+</GlobalNamingResources>
+[$ellipsis]
++----------------------------
+
+  This resource still needs to be linked to your application. Open or create your
+  app's <<<context.xml>>> and add:
+
++----------------------------
+<Context>
+[$ellipsis]
+  <!-- Add this -->
+  <ResourceLink global="ldap/default" name="ldap/localDefault"
+    type="net.sf.michaelo.dirctxsrc.DirContextSource" />
+[$ellipsis]
+</Context>
++----------------------------
+
+  Now you have successfully linked a global resource to your webapp. It is now
+  ready to use.
+

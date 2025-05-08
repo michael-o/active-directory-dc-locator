@@ -1,0 +1,45 @@
+#*
+ * Copyright 2025 Michael Osipov
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *#
+
+                            ----------------------
+                                   Download
+                            ----------------------
+                                Michael Osipov
+                            ----------------------
+                                  2025-05-02
+                            ----------------------
+
+Download ${project.name}
+
+  There are several ways to download the artifacts of this project.
+
+* Obtaining Binaries
+
+ The preferred way to obtain these artifacts is through dependency management.
+ It is available, along with its tests, sources and Javadoc JARs, in the
+ {{{https://search.maven.org/#search|ga|1|g%3A%22${project.groupId}%22%20AND%20a%3Aactive-directory-*%20AND%20v%3A%22${project.version}%22%20AND%20p%3A%22jar%22}Maven Central}} repository.
+
+* Building from Source
+
+  If you rather prefer building from source you either have to check out a working
+  copy from the project's public {{{./scm.html}repository}},
+  or download a {{{https://github.com/michael-o/${project.artifactId}/archive/refs/tags/${project.version}.zip}source ZIP file}} from GitHub.
+
+  After you have obtained the source code, navigate to the source code directory
+  and type <<<mvn install>>>. Prior to that, make sure that you have at least Maven
+  $requiredMavenVersion and Java $requiredJavaVersion installed.
+  After successful execution the artifacts will be installed to your local repository.
+

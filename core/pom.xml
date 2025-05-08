@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Copyright 2016–2025 Michael Osipov
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>net.sf.michael-o.active-directory</groupId>
+		<artifactId>active-directory-dc-locator</artifactId>
+		<version>0.5.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>active-directory-dc-locator-core</artifactId>
+	<packaging>jar</packaging>
+
+	<name>Active Directory DC Locator Core</name>
+	<description>Active Directory DC locator core module implementing DSV SRV discovery and LDAP pings.</description>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>tomcat-util</artifactId>
+			<version>9.0.102</version>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.michael-o.dirctxsrc</groupId>
+			<artifactId>dircontextsource</artifactId>
+			<version>2.4.0</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>delete-dependency-reduced-pom</id>
+						<goals>
+							<goal>clean</goal>
+						</goals>
+						<phase>clean</phase>
+						<configuration>
+							<filesets>
+								<filesets>
+									<directory>${basedir}</directory>
+									<includes>
+										<include>dependency-reduced-pom.xml</include>
+									</includes>
+								</filesets>
+							</filesets>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-shade-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<phase>package</phase>
+						<configuration>
+							<artifactSet>
+								<includes>
+									<include>org.apache.commons:commons-lang3</include>
+									<include>org.apache.tomcat:tomcat-util</include>
+								</includes>
+							</artifactSet>
+							<filters>
+								<filter>
+									<artifact>org.apache.commons:commons-lang3</artifact>
+									<includes>
+										<include>org/apache/commons/lang3/Validate.class</include>
+									</includes>
+								</filter>
+								<filter>
+									<artifact>org.apache.tomcat:tomcat-util</artifact>
+									<includes>
+										<include>org/apache/tomcat/util/buf/Asn1Writer.class</include>
+										<include>org/apache/tomcat/util/buf/Asn1Parser.class</include>
+										<include>org/apache/tomcat/util/buf/LocalStrings.properties</include>
+										<include>org/apache/tomcat/util/res/StringManager*.class</include>
+									</includes>
+								</filter>
+							</filters>
+							<relocations>
+								<relocation>
+									<pattern>org.apache.commons.lang3</pattern>
+									<shadedPattern>net.sf.michaelo.activedirectory.internal.org.apache.commons.lang3</shadedPattern>
+								</relocation>
+								<relocation>
+									<pattern>org.apache.tomcat</pattern>
+									<shadedPattern>net.sf.michaelo.activedirectory.internal.org.apache.tomcat</shadedPattern>
+								</relocation>
+							</relocations>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
