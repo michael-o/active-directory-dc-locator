@@ -25,7 +25,7 @@
 
 	<groupId>net.sf.michael-o.active-directory</groupId>
 	<artifactId>active-directory-dc-locator</artifactId>
-	<version>0.5.0-SNAPSHOT</version>
+	<version>0.5.0</version>
 	<packaging>pom</packaging>
 
 	<name>Active Directory DC Locator</name>
@@ -51,7 +51,7 @@
 	<scm>
 		<connection>scm:git:https://github.com/michael-o/active-directory-dc-locator.git</connection>
 		<developerConnection>scm:git:https://github.com/michael-o/active-directory-dc-locator.git</developerConnection>
-		<tag>HEAD</tag>
+		<tag>0.5.0</tag>
 		<url>https://github.com/michael-o/active-directory-dc-locator</url>
 	</scm>
 
