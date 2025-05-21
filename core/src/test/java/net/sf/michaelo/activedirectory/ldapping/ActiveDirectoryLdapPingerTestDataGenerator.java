@@ -29,8 +29,8 @@ import net.sf.michaelo.activedirectory.dns.ActiveDirectoryDnsLocatorTestDataGene
 /**
  * Test data generator for {@link ActiveDirectoryLdapPingerTester}. It reads a domain file ({@code /domains.txt}) from
  * the class path or a file system path from arguments. The file contains one domain per line. Then it reads a
- * hosts-per-domain file (<code>/hosts-{domain}.txt</code>) from the class path or a file system path as a sibling to
- * the domains file. The file contains one host per line. The output is written to standard output.
+ * hostnames-per-domain file (<code>/hostnames-{domain}.txt</code>) from the class path or a file system path as a
+ * sibling to the domains file. The file contains one host name per line. The output is written to standard output.
  */
 public class ActiveDirectoryLdapPingerTestDataGenerator {
 
@@ -69,28 +69,29 @@ public class ActiveDirectoryLdapPingerTestDataGenerator {
 		List<String> domains = Files.readAllLines(domainsFile);
 
 		for (String domain : domains) {
-			Path hostsFile = null;
+			Path hostNamesFile = null;
 			if (domainsFile.getFileSystem().equals(FileSystems.getDefault())) {
-				hostsFile = domainsFile.resolveSibling("hosts-" + domain + ".txt");
-				if (Files.notExists(hostsFile)) {
-					System.err.println("Domain hosts file '" + hostsFile + "' does not exist");
+				hostNamesFile = domainsFile.resolveSibling("hostnames-" + domain + ".txt");
+				if (Files.notExists(hostNamesFile)) {
+					System.err.println("Domain host names file '" + hostNamesFile + "' does not exist");
 					System.exit(1);
 				}
 			} else {
-				URL hostsClasspathUrl =
-						ActiveDirectoryDnsLocatorTestDataGenerator.class.getResource("/hosts-" + domain + ".txt");
-				if (hostsClasspathUrl == null) {
-					System.err.println("Domain hosts classpath resource '/hosts-" + domain + ".txt' does not exist");
+				URL hostNamesClasspathUrl =
+						ActiveDirectoryDnsLocatorTestDataGenerator.class.getResource("/hostnames-" + domain + ".txt");
+				if (hostNamesClasspathUrl == null) {
+					System.err.println(
+							"Domain host names classpath resource '/hostnames-" + domain + ".txt' does not exist");
 					System.exit(1);
 				}
-				hostsFile = Paths.get(hostsClasspathUrl.toURI());
+				hostNamesFile = Paths.get(hostNamesClasspathUrl.toURI());
 			}
 
-			for (String host : Files.readAllLines(hostsFile)) {
+			for (String hostName : Files.readAllLines(hostNamesFile)) {
 				for (String dnsDomain : DNS_DOMAINS) {
 					String domainName = dnsDomain.replace("${domain}", domain);
 					for (String ntVersion : NT_VERSIONS) {
-						System.out.printf("%s;%s;%s;%s%n", domain, host, domainName, ntVersion);
+						System.out.printf("%s;%s;%s;%s%n", domain, hostName, domainName, ntVersion);
 					}
 				}
 			}

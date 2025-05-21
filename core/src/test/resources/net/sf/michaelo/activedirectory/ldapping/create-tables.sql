@@ -1,7 +1,7 @@
 create table netlogon_request (
 id integer primary key,
 domain text not null,
-host text not null,
+hostName text not null,
 dnsDomain text,
 dnsHostName text,
 ntVersion text not null

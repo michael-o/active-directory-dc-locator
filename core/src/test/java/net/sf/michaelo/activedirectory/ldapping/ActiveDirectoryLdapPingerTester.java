@@ -115,13 +115,13 @@ public class ActiveDirectoryLdapPingerTester {
 			while (iter.hasNext()) {
 				String[] cols = iter.next().split(";");
 				String domain = cols[0];
-				String host = cols[1];
+				String hostName = cols[1];
 				String dnsDomain = cols[2];
 				String ntVersionStr = cols[3];
 				Set<NetlogonNtVersion> ntVersion = IntFlag.fromFlagsString(NetlogonNtVersion.class, ntVersionStr);
 
 				for (String dnsHostName : dnsHostNames) {
-					LdapPingRequest request = new LdapPingRequest(host, ntVersion);
+					LdapPingRequest request = new LdapPingRequest(hostName, ntVersion);
 					request.setProtocol(System.getProperty("protocol", "udp"));
 					request.setDnsDomain(dnsDomain);
 					request.setDnsHostName(dnsHostName);
@@ -129,7 +129,7 @@ public class ActiveDirectoryLdapPingerTester {
 					request.setReadTimeout(Integer.getInteger("readTimeout", 1000));
 					String pingType = System.getProperty("pingType", "plain");
 					String responseLine =
-							String.format("%s;%s;%s;%s;%s;", domain, host, dnsDomain, dnsHostName, ntVersionStr);
+							String.format("%s;%s;%s;%s;%s;", domain, hostName, dnsDomain, dnsHostName, ntVersionStr);
 
 					futures.add(completionService.submit(new LdapPingTask(request, pingType, responseLine)));
 				}

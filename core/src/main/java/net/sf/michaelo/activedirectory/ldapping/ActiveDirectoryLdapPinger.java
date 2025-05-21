@@ -95,7 +95,7 @@ public class ActiveDirectoryLdapPinger {
 		try {
 			hostAddress = new InetSocketAddress(InetAddress.getByName(request.getHostName()), DEFAULT_PORT);
 		} catch (UnknownHostException e) {
-			CommunicationException ne = new CommunicationException("Unknown host: " + request.getHostName());
+			CommunicationException ne = new CommunicationException("Unknown host name: " + request.getHostName());
 			ne.setStackTrace(e.getStackTrace());
 			throw ne;
 		}

@@ -63,7 +63,7 @@ public class ActiveDirectoryLdapPingerDumpPrinter {
 			while (iter.hasNext()) {
 				String[] cols = iter.next().split(";", 6);
 				String domain = cols[0];
-				String host = cols[1];
+				String hostName = cols[1];
 				String dnsDomain = cols[2];
 				String dnsHostName = cols[3];
 				String ntVersionStr = cols[4];
@@ -76,16 +76,16 @@ public class ActiveDirectoryLdapPingerDumpPrinter {
 					case "listing":
 						System.out.println("Request:");
 						System.out.println("  domain: " + domain);
-						System.out.println("  host: " + host);
+						System.out.println("  host name: " + hostName);
 						if (!dnsDomain.isEmpty()) System.out.println("  dnsDomain: " + dnsDomain);
 						if (!dnsHostName.isEmpty()) System.out.println("  dnsHostName: " + dnsHostName);
 						System.out.println("  ntVersion: " + ntVersionStr);
 						break;
 					case "sql":
 						System.out.printf(
-								"insert into netlogon_request(id, domain, host, dnsDomain, dnsHostName, ntVersion)"
+								"insert into netlogon_request(id, domain, hostName, dnsDomain, dnsHostName, ntVersion)"
 										+ " values(%d, '%s', '%s', %s, %s, '%s');%n",
-								requestId, domain, host, nullSafe(dnsDomain), nullSafe(dnsHostName), ntVersionStr);
+								requestId, domain, hostName, nullSafe(dnsDomain), nullSafe(dnsHostName), ntVersionStr);
 						break;
 				}
 
