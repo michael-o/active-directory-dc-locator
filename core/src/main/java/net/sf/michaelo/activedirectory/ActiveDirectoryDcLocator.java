@@ -59,7 +59,7 @@ import net.sf.michaelo.activedirectory.ldapping.NetlogonSamLogonExResponse;
  *
  * <ul>
  *   <li>RPCs through {@link DcLocatorRequest#setComputerName(String)} are not supported, thus the location happens on
- *       the local machine only.
+ *       the local host only. (deprecated for removal)
  *   <li>Flags {@link Flag#DS_FORCE_REDISCOVERY}, {@link Flag#DS_BACKGROUND_ONLY}, {@link Flag#DS_AVOID_SELF},
  *       {@link Flag#DS_DIRECTORY_SERVICE_PREFERRED}, {@link Flag#DS_GOOD_TIMESERV_PREFERRED} are silently ignored.
  *   <li>Flag {@link Flag#DS_IS_FLAT_NAME} is not supported.
