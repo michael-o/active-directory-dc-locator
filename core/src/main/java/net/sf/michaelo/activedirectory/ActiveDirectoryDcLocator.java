@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.naming.ConfigurationException;
+import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import javax.naming.OperationNotSupportedException;
 import javax.naming.ServiceUnavailableException;
@@ -268,7 +269,7 @@ public class ActiveDirectoryDcLocator {
 		String localHostName = getFullyQualifiedLocalHostName();
 
 		if (!localHostName.contains(PERIOD))
-			throw new ConfigurationException("Local host name must be fully qualified: " + localHostName);
+			LOGGER.fine(() -> String.format("Local host name is unqualified '%s', expect problems...", localHostName));
 
 		if (StringUtils.isNotEmpty(domainName)) {
 			if (!domainName.endsWith(PERIOD) && !domainName.contains(PERIOD))
@@ -350,6 +351,9 @@ public class ActiveDirectoryDcLocator {
 
 		if (StringUtils.isNotEmpty(siteName)) {
 			if (StringUtils.isEmpty(domainName)) {
+				if (!localHostName.contains(PERIOD))
+					throw new NameNotFoundException(String.format(
+							"Failed to extract domain name from unqualified local host name '%s'", localHostName));
 				domainName = localHostName.substring(localHostName.indexOf(PERIOD) + 1);
 				// We need to find the DNS forest name if we only have the DNS domain name through an LDAP ping
 				if (flags.contains(Flag.DS_GC_SERVER_REQUIRED))
@@ -389,6 +393,9 @@ public class ActiveDirectoryDcLocator {
 			return dcInfo;
 		} else {
 			if (StringUtils.isEmpty(domainName)) {
+				if (!localHostName.contains(PERIOD))
+					throw new NameNotFoundException(String.format(
+							"Failed to extract domain name from unqualified local host name '%s'", localHostName));
 				domainName = localHostName.substring(localHostName.indexOf(PERIOD) + 1);
 				// We need to find the DNS forest name if we only have the DNS domain name through an LDAP ping
 				if (flags.contains(Flag.DS_GC_SERVER_REQUIRED))
@@ -590,8 +597,12 @@ public class ActiveDirectoryDcLocator {
 		});
 
 		if (StringUtils.isNotEmpty(siteName)) {
-			if (StringUtils.isEmpty(domainName))
+			if (StringUtils.isEmpty(domainName)) {
+				if (!localHostName.contains(PERIOD))
+					throw new NameNotFoundException(String.format(
+							"Failed to extract domain name from unqualified local host name '%s'", localHostName));
 				domainName = localHostName.substring(localHostName.indexOf(PERIOD) + 1);
+			}
 
 			DnsLocatorRequest dnsRequest = new DnsLocatorRequest(service, domainName);
 			dnsRequest.setDcType(dcType);
@@ -623,8 +634,12 @@ public class ActiveDirectoryDcLocator {
 
 			return dcInfo;
 		} else {
-			if (StringUtils.isEmpty(domainName))
+			if (StringUtils.isEmpty(domainName)) {
+				if (!localHostName.contains(PERIOD))
+					throw new NameNotFoundException(String.format(
+							"Failed to extract domain name from unqualified local host name '%s'", localHostName));
 				domainName = localHostName.substring(localHostName.indexOf(PERIOD) + 1);
+			}
 
 			DnsLocatorRequest dnsRequest = new DnsLocatorRequest(service, domainName);
 			dnsRequest.setDcType(dcType);
@@ -684,7 +699,8 @@ public class ActiveDirectoryDcLocator {
 			if (flags.contains(Flag.DS_GC_SERVER_REQUIRED)) ntVersion.add(NetlogonNtVersion.VGC);
 			if (flags.contains(Flag.DS_PDC_REQUIRED)) ntVersion.add(NetlogonNtVersion.VPDC);
 			LdapPingRequest pingRequest = new LdapPingRequest(hostAddress.getHostString(), ntVersion);
-			pingRequest.setDnsHostName(localHostName);
+			if (localHostName.contains(PERIOD)) pingRequest.setDnsHostName(localHostName);
+			else pingRequest.setHost(localHostName);
 			pingRequest.setDnsDomain(domainName);
 			pingRequest.setReadTimeout(readTimeout);
 
