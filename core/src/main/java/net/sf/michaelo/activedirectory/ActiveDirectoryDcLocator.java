@@ -265,10 +265,10 @@ public class ActiveDirectoryDcLocator {
 			throw new OperationNotSupportedException(
 					String.format("RPC communication to '%s' is not supported", computerName));
 
-		computerName = getFullyQualifiedLocalHostName();
+		String localHostName = getFullyQualifiedLocalHostName();
 
-		if (!computerName.contains(PERIOD))
-			throw new ConfigurationException("computerName must be fully qualified: " + computerName);
+		if (!localHostName.contains(PERIOD))
+			throw new ConfigurationException("Local host name must be fully qualified: " + localHostName);
 
 		if (StringUtils.isNotEmpty(domainName)) {
 			if (!domainName.endsWith(PERIOD) && !domainName.contains(PERIOD))
@@ -299,24 +299,24 @@ public class ActiveDirectoryDcLocator {
 					flags.contains(Flag.DS_GC_SERVER_REQUIRED) ? "GC-only" : "LDAP-only",
 					dnsLocator,
 					flags,
-					computerName,
+					localHostName,
 					domainName,
 					siteName,
 					readTimeout);
 		} else if (flags.contains(Flag.DS_PDC_REQUIRED)) {
-			dcInfo = locatePdcServer(dnsLocator, flags, computerName, domainName, siteName, readTimeout);
+			dcInfo = locatePdcServer(dnsLocator, flags, localHostName, domainName, siteName, readTimeout);
 		} else if (flags.contains(Flag.DS_GC_SERVER_REQUIRED)) {
 			dcInfo = locateServer(
-					"ldap", "gc", "GC", dnsLocator, flags, computerName, domainName, siteName, readTimeout);
+					"ldap", "gc", "GC", dnsLocator, flags, localHostName, domainName, siteName, readTimeout);
 		} else if (flags.contains(Flag.DS_KDC_REQUIRED)) {
 			dcInfo = locateServer(
-					"kerberos", "dc", "KDC", dnsLocator, flags, computerName, domainName, siteName, readTimeout);
+					"kerberos", "dc", "KDC", dnsLocator, flags, localHostName, domainName, siteName, readTimeout);
 		} else if (flags.contains(Flag.DS_DIRECTORY_SERVICE_REQUIRED)) {
 			dcInfo = locateServer(
-					"ldap", "dc", "DS", dnsLocator, flags, computerName, domainName, siteName, readTimeout);
+					"ldap", "dc", "DS", dnsLocator, flags, localHostName, domainName, siteName, readTimeout);
 		} else {
 			dcInfo = locateServer(
-					"ldap", "dc", "DS", dnsLocator, flags, computerName, domainName, siteName, readTimeout);
+					"ldap", "dc", "DS", dnsLocator, flags, localHostName, domainName, siteName, readTimeout);
 		}
 
 		return dcInfo;
@@ -328,7 +328,7 @@ public class ActiveDirectoryDcLocator {
 			String serviceName,
 			ActiveDirectoryDnsLocator dnsLocator,
 			Set<Flag> flags,
-			String computerName,
+			String localHostName,
 			String domainName,
 			String siteName,
 			int readTimeout)
@@ -350,11 +350,11 @@ public class ActiveDirectoryDcLocator {
 
 		if (StringUtils.isNotEmpty(siteName)) {
 			if (StringUtils.isEmpty(domainName)) {
-				domainName = computerName.substring(computerName.indexOf(PERIOD) + 1);
+				domainName = localHostName.substring(localHostName.indexOf(PERIOD) + 1);
 				// We need to find the DNS forest name if we only have the DNS domain name through an LDAP ping
 				if (flags.contains(Flag.DS_GC_SERVER_REQUIRED))
 					domainName =
-							determineForestName(dnsLocator, flags, computerName, domainName, siteName, readTimeout);
+							determineForestName(dnsLocator, flags, localHostName, domainName, siteName, readTimeout);
 			}
 
 			DnsLocatorRequest dnsRequest = new DnsLocatorRequest(service, domainName);
@@ -368,7 +368,7 @@ public class ActiveDirectoryDcLocator {
 			}
 
 			NetlogonSamLogonExResponse pingResponse =
-					selectServer(hostAddresses, flags, computerName, domainName, null, readTimeout);
+					selectServer(hostAddresses, flags, localHostName, domainName, null, readTimeout);
 
 			if (pingResponse == null)
 				throw newNamingException(
@@ -389,10 +389,10 @@ public class ActiveDirectoryDcLocator {
 			return dcInfo;
 		} else {
 			if (StringUtils.isEmpty(domainName)) {
-				domainName = computerName.substring(computerName.indexOf(PERIOD) + 1);
+				domainName = localHostName.substring(localHostName.indexOf(PERIOD) + 1);
 				// We need to find the DNS forest name if we only have the DNS domain name through an LDAP ping
 				if (flags.contains(Flag.DS_GC_SERVER_REQUIRED))
-					domainName = determineForestName(dnsLocator, flags, computerName, domainName, null, readTimeout);
+					domainName = determineForestName(dnsLocator, flags, localHostName, domainName, null, readTimeout);
 			}
 
 			final String __domainName = domainName;
@@ -407,7 +407,7 @@ public class ActiveDirectoryDcLocator {
 			}
 
 			NetlogonSamLogonExResponse pingResponse = selectServer(
-					hostAddresses, EnumSet.noneOf(Flag.class), computerName, domainName, null, readTimeout);
+					hostAddresses, EnumSet.noneOf(Flag.class), localHostName, domainName, null, readTimeout);
 
 			if (pingResponse == null)
 				throw newNamingException(
@@ -450,7 +450,7 @@ public class ActiveDirectoryDcLocator {
 
 				if (hostAddresses != null) {
 					locatedServersCount += hostAddresses.length;
-					pingResponse = selectServer(hostAddresses, flags, computerName, domainName, null, readTimeout);
+					pingResponse = selectServer(hostAddresses, flags, localHostName, domainName, null, readTimeout);
 					selectedSiteName = siteName;
 				}
 
@@ -473,7 +473,7 @@ public class ActiveDirectoryDcLocator {
 
 					if (hostAddresses != null) {
 						locatedServersCount += hostAddresses.length;
-						pingResponse = selectServer(hostAddresses, flags, computerName, domainName, null, readTimeout);
+						pingResponse = selectServer(hostAddresses, flags, localHostName, domainName, null, readTimeout);
 						selectedSiteName = nextClosestSiteName;
 					}
 
@@ -494,7 +494,7 @@ public class ActiveDirectoryDcLocator {
 				}
 
 				locatedServersCount += hostAddresses.length;
-				pingResponse = selectServer(hostAddresses, flags, computerName, domainName, null, readTimeout);
+				pingResponse = selectServer(hostAddresses, flags, localHostName, domainName, null, readTimeout);
 				selectedSiteName = null;
 			}
 
@@ -521,7 +521,7 @@ public class ActiveDirectoryDcLocator {
 	private String determineForestName(
 			ActiveDirectoryDnsLocator dnsLocator,
 			Set<Flag> flags,
-			String computerName,
+			String localHostName,
 			String domainName,
 			String siteName,
 			int readTimeout)
@@ -543,7 +543,7 @@ public class ActiveDirectoryDcLocator {
 		}
 
 		NetlogonSamLogonExResponse pingResponse =
-				selectServer(hostAddresses, EnumSet.noneOf(Flag.class), computerName, domainName, null, readTimeout);
+				selectServer(hostAddresses, EnumSet.noneOf(Flag.class), localHostName, domainName, null, readTimeout);
 
 		if (pingResponse == null)
 			throw newNamingException(
@@ -566,7 +566,7 @@ public class ActiveDirectoryDcLocator {
 	private DomainControllerInfo locatePdcServer(
 			ActiveDirectoryDnsLocator dnsLocator,
 			Set<Flag> flags,
-			String computerName,
+			String localHostName,
 			String domainName,
 			String siteName,
 			int readTimeout)
@@ -590,7 +590,8 @@ public class ActiveDirectoryDcLocator {
 		});
 
 		if (StringUtils.isNotEmpty(siteName)) {
-			if (StringUtils.isEmpty(domainName)) domainName = computerName.substring(computerName.indexOf(PERIOD) + 1);
+			if (StringUtils.isEmpty(domainName))
+				domainName = localHostName.substring(localHostName.indexOf(PERIOD) + 1);
 
 			DnsLocatorRequest dnsRequest = new DnsLocatorRequest(service, domainName);
 			dnsRequest.setDcType(dcType);
@@ -602,7 +603,7 @@ public class ActiveDirectoryDcLocator {
 			}
 
 			NetlogonSamLogonExResponse pingResponse =
-					selectServer(hostAddresses, flags, computerName, domainName, siteName, readTimeout);
+					selectServer(hostAddresses, flags, localHostName, domainName, siteName, readTimeout);
 
 			if (pingResponse == null)
 				throw newNamingException(
@@ -622,7 +623,8 @@ public class ActiveDirectoryDcLocator {
 
 			return dcInfo;
 		} else {
-			if (StringUtils.isEmpty(domainName)) domainName = computerName.substring(computerName.indexOf(PERIOD) + 1);
+			if (StringUtils.isEmpty(domainName))
+				domainName = localHostName.substring(localHostName.indexOf(PERIOD) + 1);
 
 			DnsLocatorRequest dnsRequest = new DnsLocatorRequest(service, domainName);
 			dnsRequest.setDcType(dcType);
@@ -634,7 +636,7 @@ public class ActiveDirectoryDcLocator {
 			}
 
 			NetlogonSamLogonExResponse pingResponse =
-					selectServer(hostAddresses, flags, computerName, domainName, null, readTimeout);
+					selectServer(hostAddresses, flags, localHostName, domainName, null, readTimeout);
 
 			if (pingResponse == null)
 				throw newNamingException(
@@ -660,7 +662,7 @@ public class ActiveDirectoryDcLocator {
 	private NetlogonSamLogonExResponse selectServer(
 			InetSocketAddress[] hostAddresses,
 			Set<Flag> flags,
-			String computerName,
+			String localHostName,
 			String domainName,
 			String matchSiteName,
 			int readTimeout) {
@@ -682,7 +684,7 @@ public class ActiveDirectoryDcLocator {
 			if (flags.contains(Flag.DS_GC_SERVER_REQUIRED)) ntVersion.add(NetlogonNtVersion.VGC);
 			if (flags.contains(Flag.DS_PDC_REQUIRED)) ntVersion.add(NetlogonNtVersion.VPDC);
 			LdapPingRequest pingRequest = new LdapPingRequest(hostAddress.getHostString(), ntVersion);
-			pingRequest.setDnsHostName(computerName);
+			pingRequest.setDnsHostName(localHostName);
 			pingRequest.setDnsDomain(domainName);
 			pingRequest.setReadTimeout(readTimeout);
 
