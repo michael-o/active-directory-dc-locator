@@ -34,7 +34,7 @@ public class LdapPingRequest {
 	/**
 	 * Constructs a minimal LDAP ping request.
 	 *
-	 * @param hostName the host name from which the request is sent
+	 * @param hostName the name of the host to which the request will be sent (target server)
 	 * @param ntVersion the Netlogon NT version flags for the target server
 	 * @throws NullPointerException if {@code hostName} is null or {@code ntVersion} is null
 	 * @throws IllegalArgumentException if {@code hostName} is empty
