@@ -44,6 +44,7 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
 import net.sf.michaelo.activedirectory.IntFlag;
+import net.sf.michaelo.activedirectory.StringUtils;
 import net.sf.michaelo.dirctxsrc.DirContextSource;
 
 /**
@@ -181,11 +182,15 @@ public class ActiveDirectoryLdapPingerTester {
 		List<Object> filterArgs = new ArrayList<>();
 		filterExpr.append("(NtVer={").append(idx++).append("})");
 		filterArgs.add(ntVersionBytes);
-		if (!request.getDnsDomain().isEmpty()) {
+		if (StringUtils.isNotEmpty(request.getDnsDomain())) {
 			filterExpr.append("(DnsDomain={").append(idx++).append("})");
 			filterArgs.add(request.getDnsDomain());
 		}
-		if (!request.getDnsHostName().isEmpty()) {
+		if (StringUtils.isNotEmpty(request.getHost())) {
+			filterExpr.append("(Host={").append(idx++).append("})");
+			filterArgs.add(request.getHost());
+		}
+		if (StringUtils.isNotEmpty(request.getDnsHostName())) {
 			filterExpr.append("(DnsHostName={").append(idx++).append("})");
 			filterArgs.add(request.getDnsHostName());
 		}
