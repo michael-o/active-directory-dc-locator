@@ -27,6 +27,7 @@ public class LdapPingRequest {
 	private String hostName;
 	private Set<NetlogonNtVersion> ntVersion;
 	private String dnsDomain;
+	private String host;
 	private String dnsHostName;
 	private int connectTimeout = -1;
 	private int readTimeout = -1;
@@ -50,6 +51,10 @@ public class LdapPingRequest {
 
 	public void setDnsDomain(String dnsDomain) {
 		this.dnsDomain = dnsDomain;
+	}
+
+	public void setHost(String host) {
+		this.host = host;
 	}
 
 	public void setDnsHostName(String dnsHostName) {
@@ -78,6 +83,10 @@ public class LdapPingRequest {
 
 	public String getDnsDomain() {
 		return dnsDomain;
+	}
+
+	public String getHost() {
+		return host;
 	}
 
 	public String getDnsHostName() {

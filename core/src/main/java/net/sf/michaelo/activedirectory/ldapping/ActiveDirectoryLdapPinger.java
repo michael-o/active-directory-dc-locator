@@ -111,6 +111,8 @@ public class ActiveDirectoryLdapPinger {
 					.append(")");
 			if (StringUtils.isNotEmpty(request.getDnsDomain()))
 				message.append("(DnsDomain=").append(request.getDnsDomain()).append(")");
+			if (StringUtils.isNotEmpty(request.getHost()))
+				message.append("(Host=").append(request.getHost()).append(")");
 			if (StringUtils.isNotEmpty(request.getDnsHostName()))
 				message.append("(DnsHostName=").append(request.getDnsHostName()).append(")");
 			message.append(")'");
@@ -307,6 +309,14 @@ public class ActiveDirectoryLdapPinger {
 		if (StringUtils.isNotEmpty(request.getDnsDomain())) {
 			equalityMatchFilterBytes =
 					writeSequence(writeLdapString("DnsDomain"), writeLdapString(request.getDnsDomain()));
+			equalityMatchFilterBytes[0] = (byte) (ASN1_CONTEXT_SPECIFIC_TAG
+					| ASN1_CONSTRUCTED_TAG
+					| ASN1_LDAP_MESSAGE_SEARCH_REQUEST_EQUALITY_MATCH_FILTER_TAG_NUMBER);
+			andFilterTerms.add(equalityMatchFilterBytes);
+		}
+		// Filter:equalityMatch
+		if (StringUtils.isNotEmpty(request.getHost())) {
+			equalityMatchFilterBytes = writeSequence(writeLdapString("Host"), writeLdapString(request.getHost()));
 			equalityMatchFilterBytes[0] = (byte) (ASN1_CONTEXT_SPECIFIC_TAG
 					| ASN1_CONSTRUCTED_TAG
 					| ASN1_LDAP_MESSAGE_SEARCH_REQUEST_EQUALITY_MATCH_FILTER_TAG_NUMBER);
