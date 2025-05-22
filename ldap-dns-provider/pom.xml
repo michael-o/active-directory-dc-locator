@@ -20,7 +20,7 @@
 	<parent>
 		<groupId>net.sf.michael-o.active-directory</groupId>
 		<artifactId>active-directory-dc-locator</artifactId>
-		<version>0.5.1-SNAPSHOT</version>
+		<version>0.5.1</version>
 	</parent>
 
 	<artifactId>active-directory-jndi-ldap-dns-provider</artifactId>
@@ -72,15 +72,15 @@
 						<phase>generate-sources</phase>
 						<configuration>
 							<target>
-								<mkdir dir="${project.build.directory}/generated-sources12"/>
+								<mkdir dir="${project.build.directory}/generated-sources12" />
 								<copy todir="${project.build.directory}/generated-sources12">
 									<fileset dir="src/main/java">
-										<include name="**/ActiveDirectoryLdapDnsProvider.java"/>
+										<include name="**/ActiveDirectoryLdapDnsProvider.java" />
 									</fileset>
 									<filterchain>
 										<tokenfilter>
-											<replacestring from="com.sun.jndi.ldap.spi" to="javax.naming.ldap.spi"/>
-											<replacestring from="@SuppressWarnings(&quot;restriction&quot;)"/>
+											<replacestring from="com.sun.jndi.ldap.spi" to="javax.naming.ldap.spi" />
+											<replacestring from="@SuppressWarnings(&quot;restriction&quot;)" />
 										</tokenfilter>
 									</filterchain>
 								</copy>
