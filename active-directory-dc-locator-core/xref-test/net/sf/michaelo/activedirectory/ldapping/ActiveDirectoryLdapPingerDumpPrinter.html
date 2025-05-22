@@ -71,7 +71,7 @@
 <a class="jxr_linenumber" name="L63" href="#L63">63</a>  			<strong class="jxr_keyword">while</strong> (iter.hasNext()) {
 <a class="jxr_linenumber" name="L64" href="#L64">64</a>  				String[] cols = iter.next().split(<span class="jxr_string">";"</span>, 6);
 <a class="jxr_linenumber" name="L65" href="#L65">65</a>  				String domain = cols[0];
-<a class="jxr_linenumber" name="L66" href="#L66">66</a>  				String host = cols[1];
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>  				String hostName = cols[1];
 <a class="jxr_linenumber" name="L67" href="#L67">67</a>  				String dnsDomain = cols[2];
 <a class="jxr_linenumber" name="L68" href="#L68">68</a>  				String dnsHostName = cols[3];
 <a class="jxr_linenumber" name="L69" href="#L69">69</a>  				String ntVersionStr = cols[4];
@@ -84,16 +84,16 @@
 <a class="jxr_linenumber" name="L76" href="#L76">76</a>  					<strong class="jxr_keyword">case</strong> <span class="jxr_string">"listing"</span>:
 <a class="jxr_linenumber" name="L77" href="#L77">77</a>  						System.out.println(<span class="jxr_string">"Request:"</span>);
 <a class="jxr_linenumber" name="L78" href="#L78">78</a>  						System.out.println(<span class="jxr_string">"  domain: "</span> + domain);
-<a class="jxr_linenumber" name="L79" href="#L79">79</a>  						System.out.println(<span class="jxr_string">"  host: "</span> + host);
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>  						System.out.println(<span class="jxr_string">"  host name: "</span> + hostName);
 <a class="jxr_linenumber" name="L80" href="#L80">80</a>  						<strong class="jxr_keyword">if</strong> (!dnsDomain.isEmpty()) System.out.println(<span class="jxr_string">"  dnsDomain: "</span> + dnsDomain);
 <a class="jxr_linenumber" name="L81" href="#L81">81</a>  						<strong class="jxr_keyword">if</strong> (!dnsHostName.isEmpty()) System.out.println(<span class="jxr_string">"  dnsHostName: "</span> + dnsHostName);
 <a class="jxr_linenumber" name="L82" href="#L82">82</a>  						System.out.println(<span class="jxr_string">"  ntVersion: "</span> + ntVersionStr);
 <a class="jxr_linenumber" name="L83" href="#L83">83</a>  						<strong class="jxr_keyword">break</strong>;
 <a class="jxr_linenumber" name="L84" href="#L84">84</a>  					<strong class="jxr_keyword">case</strong> <span class="jxr_string">"sql"</span>:
 <a class="jxr_linenumber" name="L85" href="#L85">85</a>  						System.out.printf(
-<a class="jxr_linenumber" name="L86" href="#L86">86</a>  								<span class="jxr_string">"insert into netlogon_request(id, domain, host, dnsDomain, dnsHostName, ntVersion)"</span>
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>  								<span class="jxr_string">"insert into netlogon_request(id, domain, hostName, dnsDomain, dnsHostName, ntVersion)"</span>
 <a class="jxr_linenumber" name="L87" href="#L87">87</a>  										+ <span class="jxr_string">" values(%d, '%s', '%s', %s, %s, '%s');%n"</span>,
-<a class="jxr_linenumber" name="L88" href="#L88">88</a>  								requestId, domain, host, nullSafe(dnsDomain), nullSafe(dnsHostName), ntVersionStr);
+<a class="jxr_linenumber" name="L88" href="#L88">88</a>  								requestId, domain, hostName, nullSafe(dnsDomain), nullSafe(dnsHostName), ntVersionStr);
 <a class="jxr_linenumber" name="L89" href="#L89">89</a>  						<strong class="jxr_keyword">break</strong>;
 <a class="jxr_linenumber" name="L90" href="#L90">90</a>  				}
 <a class="jxr_linenumber" name="L91" href="#L91">91</a>  

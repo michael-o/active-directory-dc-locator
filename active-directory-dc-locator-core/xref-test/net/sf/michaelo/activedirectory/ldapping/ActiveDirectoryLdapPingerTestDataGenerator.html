@@ -37,8 +37,8 @@
 <a class="jxr_linenumber" name="L29" href="#L29">29</a>  <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L30" href="#L30">30</a>  <em class="jxr_javadoccomment"> * Test data generator for {@link ActiveDirectoryLdapPingerTester}. It reads a domain file ({@code /domains.txt}) from</em>
 <a class="jxr_linenumber" name="L31" href="#L31">31</a>  <em class="jxr_javadoccomment"> * the class path or a file system path from arguments. The file contains one domain per line. Then it reads a</em>
-<a class="jxr_linenumber" name="L32" href="#L32">32</a>  <em class="jxr_javadoccomment"> * hosts-per-domain file (&lt;code&gt;/hosts-{domain}.txt&lt;/code&gt;) from the class path or a file system path as a sibling to</em>
-<a class="jxr_linenumber" name="L33" href="#L33">33</a>  <em class="jxr_javadoccomment"> * the domains file. The file contains one host per line. The output is written to standard output.</em>
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>  <em class="jxr_javadoccomment"> * hostnames-per-domain file (&lt;code&gt;/hostnames-{domain}.txt&lt;/code&gt;) from the class path or a file system path as a</em>
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>  <em class="jxr_javadoccomment"> * sibling to the domains file. The file contains one host name per line. The output is written to standard output.</em>
 <a class="jxr_linenumber" name="L34" href="#L34">34</a>  <em class="jxr_javadoccomment"> */</em>
 <a class="jxr_linenumber" name="L35" href="#L35">35</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a name="ActiveDirectoryLdapPingerTestDataGenerator" href="../../../../../net/sf/michaelo/activedirectory/ldapping/ActiveDirectoryLdapPingerTestDataGenerator.html#ActiveDirectoryLdapPingerTestDataGenerator">ActiveDirectoryLdapPingerTestDataGenerator</a> {
 <a class="jxr_linenumber" name="L36" href="#L36">36</a>  
@@ -77,34 +77,35 @@
 <a class="jxr_linenumber" name="L69" href="#L69">69</a>  		List&lt;String&gt; domains = Files.readAllLines(domainsFile);
 <a class="jxr_linenumber" name="L70" href="#L70">70</a>  
 <a class="jxr_linenumber" name="L71" href="#L71">71</a>  		<strong class="jxr_keyword">for</strong> (String domain : domains) {
-<a class="jxr_linenumber" name="L72" href="#L72">72</a>  			Path hostsFile = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>  			Path hostNamesFile = <strong class="jxr_keyword">null</strong>;
 <a class="jxr_linenumber" name="L73" href="#L73">73</a>  			<strong class="jxr_keyword">if</strong> (domainsFile.getFileSystem().equals(FileSystems.getDefault())) {
-<a class="jxr_linenumber" name="L74" href="#L74">74</a>  				hostsFile = domainsFile.resolveSibling(<span class="jxr_string">"hosts-"</span> + domain + <span class="jxr_string">".txt"</span>);
-<a class="jxr_linenumber" name="L75" href="#L75">75</a>  				<strong class="jxr_keyword">if</strong> (Files.notExists(hostsFile)) {
-<a class="jxr_linenumber" name="L76" href="#L76">76</a>  					System.err.println(<span class="jxr_string">"Domain hosts file '"</span> + hostsFile + <span class="jxr_string">"' does not exist"</span>);
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>  				hostNamesFile = domainsFile.resolveSibling(<span class="jxr_string">"hostnames-"</span> + domain + <span class="jxr_string">".txt"</span>);
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>  				<strong class="jxr_keyword">if</strong> (Files.notExists(hostNamesFile)) {
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>  					System.err.println(<span class="jxr_string">"Domain host names file '"</span> + hostNamesFile + <span class="jxr_string">"' does not exist"</span>);
 <a class="jxr_linenumber" name="L77" href="#L77">77</a>  					System.exit(1);
 <a class="jxr_linenumber" name="L78" href="#L78">78</a>  				}
 <a class="jxr_linenumber" name="L79" href="#L79">79</a>  			} <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L80" href="#L80">80</a>  				URL hostsClasspathUrl =
-<a class="jxr_linenumber" name="L81" href="#L81">81</a>  						ActiveDirectoryDnsLocatorTestDataGenerator.<strong class="jxr_keyword">class</strong>.getResource(<span class="jxr_string">"/hosts-"</span> + domain + <span class="jxr_string">".txt"</span>);
-<a class="jxr_linenumber" name="L82" href="#L82">82</a>  				<strong class="jxr_keyword">if</strong> (hostsClasspathUrl == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L83" href="#L83">83</a>  					System.err.println(<span class="jxr_string">"Domain hosts classpath resource '/hosts-"</span> + domain + <span class="jxr_string">".txt' does not exist"</span>);
-<a class="jxr_linenumber" name="L84" href="#L84">84</a>  					System.exit(1);
-<a class="jxr_linenumber" name="L85" href="#L85">85</a>  				}
-<a class="jxr_linenumber" name="L86" href="#L86">86</a>  				hostsFile = Paths.get(hostsClasspathUrl.toURI());
-<a class="jxr_linenumber" name="L87" href="#L87">87</a>  			}
-<a class="jxr_linenumber" name="L88" href="#L88">88</a>  
-<a class="jxr_linenumber" name="L89" href="#L89">89</a>  			<strong class="jxr_keyword">for</strong> (String host : Files.readAllLines(hostsFile)) {
-<a class="jxr_linenumber" name="L90" href="#L90">90</a>  				<strong class="jxr_keyword">for</strong> (String dnsDomain : DNS_DOMAINS) {
-<a class="jxr_linenumber" name="L91" href="#L91">91</a>  					String domainName = dnsDomain.replace(<span class="jxr_string">"${domain}"</span>, domain);
-<a class="jxr_linenumber" name="L92" href="#L92">92</a>  					<strong class="jxr_keyword">for</strong> (String ntVersion : NT_VERSIONS) {
-<a class="jxr_linenumber" name="L93" href="#L93">93</a>  						System.out.printf(<span class="jxr_string">"%s;%s;%s;%s%n"</span>, domain, host, domainName, ntVersion);
-<a class="jxr_linenumber" name="L94" href="#L94">94</a>  					}
-<a class="jxr_linenumber" name="L95" href="#L95">95</a>  				}
-<a class="jxr_linenumber" name="L96" href="#L96">96</a>  			}
-<a class="jxr_linenumber" name="L97" href="#L97">97</a>  		}
-<a class="jxr_linenumber" name="L98" href="#L98">98</a>  	}
-<a class="jxr_linenumber" name="L99" href="#L99">99</a>  }
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>  				URL hostNamesClasspathUrl =
+<a class="jxr_linenumber" name="L81" href="#L81">81</a>  						ActiveDirectoryDnsLocatorTestDataGenerator.<strong class="jxr_keyword">class</strong>.getResource(<span class="jxr_string">"/hostnames-"</span> + domain + <span class="jxr_string">".txt"</span>);
+<a class="jxr_linenumber" name="L82" href="#L82">82</a>  				<strong class="jxr_keyword">if</strong> (hostNamesClasspathUrl == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>  					System.err.println(
+<a class="jxr_linenumber" name="L84" href="#L84">84</a>  							<span class="jxr_string">"Domain host names classpath resource '/hostnames-"</span> + domain + <span class="jxr_string">".txt' does not exist"</span>);
+<a class="jxr_linenumber" name="L85" href="#L85">85</a>  					System.exit(1);
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>  				}
+<a class="jxr_linenumber" name="L87" href="#L87">87</a>  				hostNamesFile = Paths.get(hostNamesClasspathUrl.toURI());
+<a class="jxr_linenumber" name="L88" href="#L88">88</a>  			}
+<a class="jxr_linenumber" name="L89" href="#L89">89</a>  
+<a class="jxr_linenumber" name="L90" href="#L90">90</a>  			<strong class="jxr_keyword">for</strong> (String hostName : Files.readAllLines(hostNamesFile)) {
+<a class="jxr_linenumber" name="L91" href="#L91">91</a>  				<strong class="jxr_keyword">for</strong> (String dnsDomain : DNS_DOMAINS) {
+<a class="jxr_linenumber" name="L92" href="#L92">92</a>  					String domainName = dnsDomain.replace(<span class="jxr_string">"${domain}"</span>, domain);
+<a class="jxr_linenumber" name="L93" href="#L93">93</a>  					<strong class="jxr_keyword">for</strong> (String ntVersion : NT_VERSIONS) {
+<a class="jxr_linenumber" name="L94" href="#L94">94</a>  						System.out.printf(<span class="jxr_string">"%s;%s;%s;%s%n"</span>, domain, hostName, domainName, ntVersion);
+<a class="jxr_linenumber" name="L95" href="#L95">95</a>  					}
+<a class="jxr_linenumber" name="L96" href="#L96">96</a>  				}
+<a class="jxr_linenumber" name="L97" href="#L97">97</a>  			}
+<a class="jxr_linenumber" name="L98" href="#L98">98</a>  		}
+<a class="jxr_linenumber" name="L99" href="#L99">99</a>  	}
+<a class="jxr_linenumber" name="L100" href="#L100">100</a> }
 </pre>
 <hr/>
 <div id="footer">© 2016–2025 <a href="https://github.com/michael-o">Michael Osipov</a></div>
