@@ -72,15 +72,15 @@
 						<phase>generate-sources</phase>
 						<configuration>
 							<target>
-								<mkdir dir="${project.build.directory}/generated-sources12" />
+								<mkdir dir="${project.build.directory}/generated-sources12"/>
 								<copy todir="${project.build.directory}/generated-sources12">
 									<fileset dir="src/main/java">
-										<include name="**/ActiveDirectoryLdapDnsProvider.java" />
+										<include name="**/ActiveDirectoryLdapDnsProvider.java"/>
 									</fileset>
 									<filterchain>
 										<tokenfilter>
-											<replacestring from="com.sun.jndi.ldap.spi" to="javax.naming.ldap.spi" />
-											<replacestring from="@SuppressWarnings(&quot;restriction&quot;)" />
+											<replacestring from="com.sun.jndi.ldap.spi" to="javax.naming.ldap.spi"/>
+											<replacestring from="@SuppressWarnings(&quot;restriction&quot;)"/>
 										</tokenfilter>
 									</filterchain>
 								</copy>
