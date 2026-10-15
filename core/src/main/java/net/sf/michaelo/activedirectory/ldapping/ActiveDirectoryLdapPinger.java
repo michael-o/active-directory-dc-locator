@@ -101,7 +101,7 @@ public class ActiveDirectoryLdapPinger {
 		}
 
 		byte[] requestBytes = asn1Encode(request);
-		byte[] responseBytes = new byte[512];
+		byte[] responseBytes = new byte[2048];
 
 		if (LOGGER.isLoggable(Level.FINE)) {
 			StringBuilder message = new StringBuilder();
@@ -163,6 +163,10 @@ public class ActiveDirectoryLdapPinger {
 				try {
 					DatagramPacket inPacket = new DatagramPacket(responseBytes, responseBytes.length);
 					sock.receive(inPacket);
+					if (inPacket.getLength() == responseBytes.length)
+						throw new CommunicationException(String.format(
+								"LDAP ping response from %s exceeds receive buffer size (%d B)",
+								hostAddress, responseBytes.length));
 					if (inPacket.getLength() > 0) {
 						responseBytes = Arrays.copyOfRange(inPacket.getData(), 0, inPacket.getLength());
 						final byte[] respBytes = responseBytes;
