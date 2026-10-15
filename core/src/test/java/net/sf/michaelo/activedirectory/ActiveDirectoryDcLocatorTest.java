@@ -27,6 +27,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class ActiveDirectoryDcLocatorTest {
 
 	@Test
+	void nullRequest() {
+		ActiveDirectoryDcLocator locator = new ActiveDirectoryDcLocator();
+
+		assertThrows(NullPointerException.class, () -> locator.locate(null));
+	}
+
+	@Test
 	void unqualifiedDomainName() {
 		DcLocatorRequest request = new DcLocatorRequest();
 		request.setDomainName("foo");
@@ -119,10 +126,31 @@ public class ActiveDirectoryDcLocatorTest {
 
 		ConfigurationException e6 = assertThrows(ConfigurationException.class, () -> locator.locate(request6));
 		Assertions.assertEquals("Flags [DS_IS_FLAT_NAME|DS_IS_DNS_NAME] cannot be combined", e6.getMessage());
+
+		DcLocatorRequest request7 = new DcLocatorRequest();
+		request7.addFlag(Flag.DS_DIRECTORY_SERVICE_REQUIRED);
+		request7.addFlag(Flag.DS_DIRECTORY_SERVICE_6_REQUIRED);
+
+		ConfigurationException e7 = assertThrows(ConfigurationException.class, () -> locator.locate(request7));
+		Assertions.assertEquals(
+				"Flags [DS_DIRECTORY_SERVICE_REQUIRED|DS_DIRECTORY_SERVICE_6_REQUIRED] cannot be combined",
+				e7.getMessage());
+
+		DcLocatorRequest request8 = new DcLocatorRequest();
+		request8.addFlag(Flag.DS_DIRECTORY_SERVICE_REQUIRED);
+		request8.addFlag(Flag.DS_DIRECTORY_SERVICE_6_REQUIRED);
+		request8.addFlag(Flag.DS_DIRECTORY_SERVICE_8_REQUIRED);
+		request8.addFlag(Flag.DS_DIRECTORY_SERVICE_9_REQUIRED);
+		request8.addFlag(Flag.DS_DIRECTORY_SERVICE_10_REQUIRED);
+
+		ConfigurationException e8 = assertThrows(ConfigurationException.class, () -> locator.locate(request8));
+		Assertions.assertEquals(
+				"Flags [DS_DIRECTORY_SERVICE_REQUIRED|DS_DIRECTORY_SERVICE_6_REQUIRED|DS_DIRECTORY_SERVICE_8_REQUIRED|DS_DIRECTORY_SERVICE_9_REQUIRED|DS_DIRECTORY_SERVICE_10_REQUIRED] cannot be combined",
+				e8.getMessage());
 	}
 
 	@Test
-	void mutuallyExclusiveConditinalFlags() {
+	void mutuallyExclusiveConditionalFlags() {
 		DcLocatorRequest request = new DcLocatorRequest();
 		request.addFlag(Flag.DS_GOOD_TIMESERV_PREFERRED);
 		request.addFlag(Flag.DS_GC_SERVER_REQUIRED);
