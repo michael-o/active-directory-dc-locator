@@ -157,10 +157,10 @@ public abstract class NetlogonSamLogonBaseResponse {
 
 	protected void consumeLmTokens(ByteBuffer buf) {
 		short lmNtToken = buf.getShort();
-		if ((lmNtToken & 0xFFFF) == 0)
+		if ((lmNtToken & 0xFFFF) != 0xFFFF)
 			throw new IllegalArgumentException(String.format("LmNtToken must be 0xFFFF, but is 0x%04X", lmNtToken));
 		short lm20Token = buf.getShort();
-		if ((lm20Token & 0xFFFF) == 0)
+		if ((lm20Token & 0xFFFF) != 0xFFFF)
 			throw new IllegalArgumentException(String.format("Lm20Token must be 0xFFFF, but is 0x%04X", lm20Token));
 	}
 
