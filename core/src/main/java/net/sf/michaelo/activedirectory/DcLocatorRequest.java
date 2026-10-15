@@ -70,9 +70,6 @@ public class DcLocatorRequest {
 		}
 	}
 
-	@Deprecated
-	private String computerName;
-
 	private String domainName;
 	private String siteName;
 	private Set<Flag> flags;
@@ -80,11 +77,6 @@ public class DcLocatorRequest {
 
 	public DcLocatorRequest() {
 		flags = EnumSet.noneOf(Flag.class);
-	}
-
-	@Deprecated
-	public void setComputerName(String computerName) {
-		this.computerName = computerName;
 	}
 
 	public void setDomainName(String domainName) {
@@ -101,11 +93,6 @@ public class DcLocatorRequest {
 
 	public void setReadTimeout(int readTimeout) {
 		this.readTimeout = readTimeout;
-	}
-
-	@Deprecated
-	public String getComputerName() {
-		return computerName;
 	}
 
 	public String getDomainName() {

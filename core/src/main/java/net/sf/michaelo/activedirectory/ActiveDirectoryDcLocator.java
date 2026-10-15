@@ -34,7 +34,6 @@ import java.util.stream.Stream;
 import javax.naming.ConfigurationException;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
-import javax.naming.OperationNotSupportedException;
 import javax.naming.ServiceUnavailableException;
 
 import net.sf.michaelo.activedirectory.DcLocatorRequest.Flag;
@@ -60,8 +59,8 @@ import net.sf.michaelo.activedirectory.ldapping.NetlogonSamLogonExResponse;
  * inspection, but will never fully cover its functionality. More specifically, the following differs:
  *
  * <ul>
- *   <li>RPCs through {@link DcLocatorRequest#setComputerName(String)} are not supported, thus the location happens on
- *       the local host only. (deprecated for removal)
+ *   <li>RPCs to locate a DC as seen by a remote computer are not supported, thus the location happens on the local
+ *       host only.
  *   <li>Flags {@link Flag#DS_FORCE_REDISCOVERY}, {@link Flag#DS_BACKGROUND_ONLY}, {@link Flag#DS_AVOID_SELF},
  *       {@link Flag#DS_DIRECTORY_SERVICE_PREFERRED}, {@link Flag#DS_GOOD_TIMESERV_PREFERRED} are silently ignored.
  *   <li>Flag {@link Flag#DS_IS_FLAT_NAME} is not supported.
@@ -255,7 +254,6 @@ public class ActiveDirectoryDcLocator {
 	 * @param request the DC locator request
 	 * @return the located domain controller information, never null
 	 * @throws NullPointerException if {@code request} is null
-	 * @throws OperationNotSupportedException if {@code DcLocatorRequest#getComputerName()} is not null
 	 * @throws ConfigurationException if the {@code request} contains incompatible parameters or the local host name
 	 *     could not be determined
 	 * @throws NamingException if the locator process has failed, cause may contain details
@@ -263,14 +261,9 @@ public class ActiveDirectoryDcLocator {
 	public DomainControllerInfo locate(DcLocatorRequest request) throws NamingException {
 		Objects.requireNonNull(request, "request cannot be null");
 
-		String computerName = request.getComputerName();
 		String domainName = request.getDomainName();
 		String siteName = request.getSiteName();
 		int readTimeout = request.getReadTimeout();
-
-		if (StringUtils.isNotEmpty(computerName))
-			throw new OperationNotSupportedException(
-					String.format("RPC communication to '%s' is not supported", computerName));
 
 		String localHostName = getFullyQualifiedLocalHostName();
 
