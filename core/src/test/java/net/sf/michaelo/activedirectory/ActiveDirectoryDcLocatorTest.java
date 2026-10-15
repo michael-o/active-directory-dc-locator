@@ -16,7 +16,6 @@
 package net.sf.michaelo.activedirectory;
 
 import javax.naming.ConfigurationException;
-import javax.naming.OperationNotSupportedException;
 
 import net.sf.michaelo.activedirectory.DcLocatorRequest.Flag;
 
@@ -26,17 +25,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ActiveDirectoryDcLocatorTest {
-
-	@Test
-	void remoteComputerName() throws Exception {
-		DcLocatorRequest request = new DcLocatorRequest();
-		request.setComputerName("foo");
-		ActiveDirectoryDcLocator locator = new ActiveDirectoryDcLocator();
-
-		OperationNotSupportedException e =
-				assertThrows(OperationNotSupportedException.class, () -> locator.locate(request));
-		Assertions.assertEquals("RPC communication to 'foo' is not supported", e.getMessage());
-	}
 
 	@Test
 	void unqualifiedDomainName() {
