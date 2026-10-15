@@ -59,14 +59,14 @@ import net.sf.michaelo.activedirectory.ldapping.NetlogonSamLogonExResponse;
  * inspection, but will never fully cover its functionality. More specifically, the following differs:
  *
  * <ul>
- *   <li>RPCs to locate a DC as seen by a remote computer are not supported, thus the location happens on the local
- *       host only.
+ *   <li>RPCs to locate a DC as seen by a remote computer are not supported, thus the location happens on the local host
+ *       only.
  *   <li>Flags {@link Flag#DS_FORCE_REDISCOVERY}, {@link Flag#DS_BACKGROUND_ONLY}, {@link Flag#DS_AVOID_SELF},
  *       {@link Flag#DS_DIRECTORY_SERVICE_PREFERRED}, {@link Flag#DS_GOOD_TIMESERV_PREFERRED} are silently ignored.
  *   <li>Flag {@link Flag#DS_IS_FLAT_NAME} is not supported.
  *   <li>Location via GUID is not supported at all.
- *   <li>{@link DcLocatorRequest#setSiteName(String)} is ignored when {@link Flag#DS_PDC_REQUIRED} is set, since the
- *       PDC emulator master registers only a single, domain-wide SRV record with no site-specific equivalent.
+ *   <li>{@link DcLocatorRequest#setSiteName(String)} is ignored when {@link Flag#DS_PDC_REQUIRED} is set, since the PDC
+ *       emulator master registers only a single, domain-wide SRV record with no site-specific equivalent.
  * </ul>
  *
  * <p><b>Note</b>: This class uses JUL to print log messages, enable at least level {@code FINE} to see output.
@@ -418,8 +418,8 @@ public class ActiveDirectoryDcLocator {
 			// probed again, even if a later stage's SRV query happens to list it too.
 			Set<InetSocketAddress> unusableAddresses = new HashSet<>();
 
-			NetlogonSamLogonExResponse pingResponse = selectServer(
-					hostAddresses, flags, localHostName, domainName, null, readTimeout, unusableAddresses);
+			NetlogonSamLogonExResponse pingResponse =
+					selectServer(hostAddresses, flags, localHostName, domainName, null, readTimeout, unusableAddresses);
 
 			if (pingResponse == null)
 				throw newNamingException(
@@ -456,8 +456,8 @@ public class ActiveDirectoryDcLocator {
 				if (LOGGER.isLoggable(Level.FINER))
 					LOGGER.finer(() -> String.format("Located %s server: %s", serviceName, dcInfo));
 				else
-					LOGGER.fine(() -> String.format(
-							"Located %s server '%s'", serviceName, dcInfo.getDomainControllerName()));
+					LOGGER.fine(() ->
+							String.format("Located %s server '%s'", serviceName, dcInfo.getDomainControllerName()));
 
 				return dcInfo;
 			}
@@ -638,9 +638,7 @@ public class ActiveDirectoryDcLocator {
 
 		if (LOGGER.isLoggable(Level.FINER))
 			LOGGER.finer(() -> String.format("Located %s server: %s", serviceName, dcInfo));
-		else
-			LOGGER.fine(
-					() -> String.format("Located %s server '%s'", serviceName, dcInfo.getDomainControllerName()));
+		else LOGGER.fine(() -> String.format("Located %s server '%s'", serviceName, dcInfo.getDomainControllerName()));
 
 		return dcInfo;
 	}
@@ -657,15 +655,13 @@ public class ActiveDirectoryDcLocator {
 	}
 
 	/**
-	 * Same as {@link #selectServer(InetSocketAddress[], Set, String, String, String, int)}, but
-	 * skips any address already present in {@code unusableAddresses} and, when a probed
-	 * server turns out to be permanently unusable for the request (unreachable, or missing a
-	 * required capability per {@link #SERVER_SELECTION_FLAGS}), records it there too. A server
-	 * skipped only because it did not match {@code matchSiteName} is <strong>not</strong>
-	 * recorded, since that rejection is specific to this call's site filter, not to the server
-	 * itself - a later call with a different (or no) site filter may still want to probe it.
-	 * This lets a caller chain multiple calls across fallback stages against overlapping
-	 * candidate sets without re-probing a server already proven unreachable or non-conformant.
+	 * Same as {@link #selectServer(InetSocketAddress[], Set, String, String, String, int)}, but skips any address
+	 * already present in {@code unusableAddresses} and, when a probed server turns out to be permanently unusable for
+	 * the request (unreachable, or missing a required capability per {@link #SERVER_SELECTION_FLAGS}), records it there
+	 * too. A server skipped only because it did not match {@code matchSiteName} is <strong>not</strong> recorded, since
+	 * that rejection is specific to this call's site filter, not to the server itself - a later call with a different
+	 * (or no) site filter may still want to probe it. This lets a caller chain multiple calls across fallback stages
+	 * against overlapping candidate sets without re-probing a server already proven unreachable or non-conformant.
 	 */
 	private NetlogonSamLogonExResponse selectServer(
 			InetSocketAddress[] hostAddresses,
@@ -709,17 +705,17 @@ public class ActiveDirectoryDcLocator {
 				pingResponse = (NetlogonSamLogonExResponse) pinger.ping(pingRequest);
 				Set<DsFlag> dsFlags = pingResponse.getFlags();
 
-				boolean missingRequiredCapability = SERVER_SELECTION_FLAGS.entrySet().stream().anyMatch(e -> {
-					boolean _skip = flags.contains(e.getKey()) && !dsFlags.contains(e.getValue());
-					if (_skip)
-						LOGGER.fine(() -> String.format(
-								"Skipping server '%s', it does not have required flag '%s'",
-								hostAddress.getHostString(), e.getValue()));
+				boolean missingRequiredCapability = SERVER_SELECTION_FLAGS.entrySet().stream()
+						.anyMatch(e -> {
+							boolean _skip = flags.contains(e.getKey()) && !dsFlags.contains(e.getValue());
+							if (_skip)
+								LOGGER.fine(() -> String.format(
+										"Skipping server '%s', it does not have required flag '%s'",
+										hostAddress.getHostString(), e.getValue()));
 
-					return _skip;
-				});
-				if (missingRequiredCapability && unusableAddresses != null)
-					unusableAddresses.add(hostAddress);
+							return _skip;
+						});
+				if (missingRequiredCapability && unusableAddresses != null) unusableAddresses.add(hostAddress);
 
 				boolean wrongSite = StringUtils.isNotEmpty(matchSiteName)
 						&& !pingResponse.getDcSiteName().equalsIgnoreCase(matchSiteName);
