@@ -16,6 +16,8 @@
 package net.sf.michaelo.activedirectory.ldapping;
 
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.lang3.Validate;
@@ -46,7 +48,10 @@ public class LdapPingRequest {
 	 */
 	public LdapPingRequest(String hostName, Set<NetlogonNtVersion> ntVersion) {
 		this.hostName = Validate.notEmpty(hostName, "hostName cannot be null or empty");
-		this.ntVersion = Collections.unmodifiableSet(ntVersion);
+		Objects.requireNonNull(ntVersion, "ntVersion cannot be null");
+		EnumSet<NetlogonNtVersion> ntVersionCopy = EnumSet.noneOf(NetlogonNtVersion.class);
+		ntVersionCopy.addAll(ntVersion);
+		this.ntVersion = Collections.unmodifiableSet(ntVersionCopy);
 	}
 
 	public void setProtocol(String protocol) {
