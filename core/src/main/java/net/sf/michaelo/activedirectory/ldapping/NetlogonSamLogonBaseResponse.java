@@ -124,13 +124,12 @@ public abstract class NetlogonSamLogonBaseResponse {
 					}
 					break;
 				case LABEL_COMPRESSION:
+					int pointerPos = ((Buffer) buf).position() - 1;
 					short offset = (short) ((len & ~LABEL_COMPRESSION) << 8 | buf.get() & 0xFF);
 					if (!pointerMode) currPos++;
-					// position of pointer minus two length bytes
-					int maxOffset = currPos - 2;
-					if (offset >= maxOffset)
+					if (offset >= pointerPos)
 						throw new IllegalArgumentException(String.format(
-								"Domain name pointer offset (%d) beyond current position (%d)", offset, maxOffset));
+								"Domain name pointer offset (%d) beyond current position (%d)", offset, pointerPos));
 					((Buffer) buf).position(offset);
 					pointerMode = true;
 					break;
