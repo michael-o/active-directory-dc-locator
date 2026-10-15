@@ -417,6 +417,9 @@ public class ActiveDirectoryDcLocator {
 			} catch (NamingException e) {
 				throw newNamingException(domainName, null, e);
 			}
+			// Kept around for the final, domain-wide fallback below: it is the exact same query,
+			// so there is no need to hit DNS for it again.
+			final InetSocketAddress[] domainWideHostAddresses = hostAddresses;
 
 			NetlogonSamLogonExResponse pingResponse =
 					selectServer(hostAddresses, flags, localHostName, domainName, null, readTimeout);
@@ -511,15 +514,7 @@ public class ActiveDirectoryDcLocator {
 			}
 
 			if (pingResponse == null) {
-				dnsRequest = new DnsLocatorRequest(service, domainName);
-				dnsRequest.setDcType(dcType);
-				hostAddresses = null;
-				try {
-					hostAddresses = dnsLocator.locate(dnsRequest);
-				} catch (NamingException e) {
-					throw newNamingException(domainName, null, e);
-				}
-
+				hostAddresses = domainWideHostAddresses;
 				locatedServersCount += hostAddresses.length;
 				pingResponse = selectServer(hostAddresses, flags, localHostName, domainName, null, readTimeout);
 				selectedSiteName = null;
