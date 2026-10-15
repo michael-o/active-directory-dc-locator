@@ -74,7 +74,7 @@ public abstract class NetlogonSamLogonBaseResponse {
 		int startPos = ((Buffer) buf).position();
 		int endPos = -1;
 		boolean nullTerminatorFound = false;
-		while (buf.hasRemaining() && !nullTerminatorFound) {
+		while (buf.remaining() >= 2 && !nullTerminatorFound) {
 			byte low = buf.get();
 			byte high = buf.get();
 			endPos = ((Buffer) buf).position();
