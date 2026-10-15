@@ -144,6 +144,7 @@ public class ActiveDirectoryLdapPinger {
 		}
 		if (!preferTcp) {
 			try (DatagramSocket sock = new DatagramSocket()) {
+				sock.connect(hostAddress);
 				if (request.getReadTimeout() > 0) sock.setSoTimeout(request.getReadTimeout());
 
 				try {
