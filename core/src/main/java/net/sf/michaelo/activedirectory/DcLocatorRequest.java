@@ -23,6 +23,8 @@ import java.util.Set;
  * DC locator request for {@link ActiveDirectoryDcLocator}. The parameters represent the arguments for <a
  * href="https://learn.microsoft.com/en-us/windows/win32/api/dsgetdc/nf-dsgetdc-dsgetdcnamea"><code>DsGetDcName()</code>
  * </a> function.
+ *
+ * <p><b>Thread safety</b>: this class is not thread-safe. An instance must not be changed after first use.
  */
 public class DcLocatorRequest {
 

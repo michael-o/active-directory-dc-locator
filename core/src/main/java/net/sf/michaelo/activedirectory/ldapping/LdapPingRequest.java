@@ -20,7 +20,11 @@ import java.util.Set;
 
 import org.apache.commons.lang3.Validate;
 
-/** LDAP ping request for {@link ActiveDirectoryLdapPinger}. */
+/**
+ * LDAP ping request for {@link ActiveDirectoryLdapPinger}.
+ *
+ * <p><b>Thread safety</b>: this class is not thread-safe. An instance must not be changed after first use.
+ */
 public class LdapPingRequest {
 
 	private String protocol;
