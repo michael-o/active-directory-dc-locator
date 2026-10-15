@@ -326,6 +326,7 @@ public class ActiveDirectoryDnsLocator {
 						String hostName = srvRecord.target.substring(0, srvRecord.target.length() - 1);
 						sortedHostAddresses[hp++] = InetSocketAddress.createUnresolved(hostName, srvRecord.port);
 						srvRecords[k] = null;
+						break;
 					}
 				}
 			}
