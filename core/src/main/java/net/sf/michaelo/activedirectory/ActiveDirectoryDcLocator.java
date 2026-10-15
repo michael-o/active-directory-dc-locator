@@ -22,6 +22,7 @@ import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -420,9 +421,12 @@ public class ActiveDirectoryDcLocator {
 			// Kept around for the final, domain-wide fallback below: it is the exact same query,
 			// so there is no need to hit DNS for it again.
 			final InetSocketAddress[] domainWideHostAddresses = hostAddresses;
+			// Shared across every stage below so a server already probed and rejected is never
+			// probed again, even if a later stage's SRV query happens to list it too.
+			Set<InetSocketAddress> unusableAddresses = new HashSet<>();
 
-			NetlogonSamLogonExResponse pingResponse =
-					selectServer(hostAddresses, flags, localHostName, domainName, null, readTimeout);
+			NetlogonSamLogonExResponse pingResponse = selectServer(
+					hostAddresses, flags, localHostName, domainName, null, readTimeout, unusableAddresses);
 
 			if (pingResponse == null)
 				throw newNamingException(
@@ -480,7 +484,8 @@ public class ActiveDirectoryDcLocator {
 
 				if (hostAddresses != null) {
 					locatedServersCount += hostAddresses.length;
-					pingResponse = selectServer(hostAddresses, flags, localHostName, domainName, null, readTimeout);
+					pingResponse = selectServer(
+							hostAddresses, flags, localHostName, domainName, null, readTimeout, unusableAddresses);
 					selectedSiteName = siteName;
 				}
 
@@ -503,7 +508,8 @@ public class ActiveDirectoryDcLocator {
 
 					if (hostAddresses != null) {
 						locatedServersCount += hostAddresses.length;
-						pingResponse = selectServer(hostAddresses, flags, localHostName, domainName, null, readTimeout);
+						pingResponse = selectServer(
+								hostAddresses, flags, localHostName, domainName, null, readTimeout, unusableAddresses);
 						selectedSiteName = nextClosestSiteName;
 					}
 
@@ -516,7 +522,8 @@ public class ActiveDirectoryDcLocator {
 			if (pingResponse == null) {
 				hostAddresses = domainWideHostAddresses;
 				locatedServersCount += hostAddresses.length;
-				pingResponse = selectServer(hostAddresses, flags, localHostName, domainName, null, readTimeout);
+				pingResponse = selectServer(
+						hostAddresses, flags, localHostName, domainName, null, readTimeout, unusableAddresses);
 				selectedSiteName = null;
 			}
 
@@ -653,6 +660,28 @@ public class ActiveDirectoryDcLocator {
 			String domainName,
 			String matchSiteName,
 			int readTimeout) {
+		return selectServer(hostAddresses, flags, localHostName, domainName, matchSiteName, readTimeout, null);
+	}
+
+	/**
+	 * Same as {@link #selectServer(InetSocketAddress[], Set, String, String, String, int)}, but
+	 * skips any address already present in {@code unusableAddresses} and, when a probed
+	 * server turns out to be permanently unusable for the request (unreachable, or missing a
+	 * required capability per {@link #SERVER_SELECTION_FLAGS}), records it there too. A server
+	 * skipped only because it did not match {@code matchSiteName} is <strong>not</strong>
+	 * recorded, since that rejection is specific to this call's site filter, not to the server
+	 * itself - a later call with a different (or no) site filter may still want to probe it.
+	 * This lets a caller chain multiple calls across fallback stages against overlapping
+	 * candidate sets without re-probing a server already proven unreachable or non-conformant.
+	 */
+	private NetlogonSamLogonExResponse selectServer(
+			InetSocketAddress[] hostAddresses,
+			Set<Flag> flags,
+			String localHostName,
+			String domainName,
+			String matchSiteName,
+			int readTimeout,
+			Set<InetSocketAddress> unusableAddresses) {
 		ActiveDirectoryLdapPinger pinger = new ActiveDirectoryLdapPinger();
 		NetlogonSamLogonExResponse pingResponse = null;
 		if (LOGGER.isLoggable(Level.FINER))
@@ -666,6 +695,12 @@ public class ActiveDirectoryDcLocator {
 					"Selecting from %s server%s", hostAddresses.length, hostAddresses.length == 1 ? "" : "s"));
 
 		for (InetSocketAddress hostAddress : hostAddresses) {
+			if (unusableAddresses != null && unusableAddresses.contains(hostAddress)) {
+				LOGGER.fine(() -> String.format(
+						"Skipping server '%s', it has already proven unusable", hostAddress.getHostString()));
+				continue;
+			}
+
 			Set<NetlogonNtVersion> ntVersion = EnumSet.of(NetlogonNtVersion.V5EX, NetlogonNtVersion.VCS);
 			if (flags.contains(Flag.DS_IP_REQUIRED)) ntVersion.add(NetlogonNtVersion.V5EP);
 			if (flags.contains(Flag.DS_GC_SERVER_REQUIRED)) ntVersion.add(NetlogonNtVersion.VGC);
@@ -681,7 +716,7 @@ public class ActiveDirectoryDcLocator {
 				pingResponse = (NetlogonSamLogonExResponse) pinger.ping(pingRequest);
 				Set<DsFlag> dsFlags = pingResponse.getFlags();
 
-				boolean skip = SERVER_SELECTION_FLAGS.entrySet().stream().anyMatch(e -> {
+				boolean missingRequiredCapability = SERVER_SELECTION_FLAGS.entrySet().stream().anyMatch(e -> {
 					boolean _skip = flags.contains(e.getKey()) && !dsFlags.contains(e.getValue());
 					if (_skip)
 						LOGGER.fine(() -> String.format(
@@ -690,16 +725,17 @@ public class ActiveDirectoryDcLocator {
 
 					return _skip;
 				});
+				if (missingRequiredCapability && unusableAddresses != null)
+					unusableAddresses.add(hostAddress);
 
-				if (StringUtils.isNotEmpty(matchSiteName)
-						&& !pingResponse.getDcSiteName().equalsIgnoreCase(matchSiteName)) {
-					skip = true;
+				boolean wrongSite = StringUtils.isNotEmpty(matchSiteName)
+						&& !pingResponse.getDcSiteName().equalsIgnoreCase(matchSiteName);
+				if (wrongSite)
 					LOGGER.fine(() -> String.format(
 							"Skipping server '%s', it is not in site '%s'",
 							hostAddress.getHostString(), matchSiteName));
-				}
 
-				if (skip) {
+				if (missingRequiredCapability || wrongSite) {
 					pingResponse = null;
 					continue;
 				}
@@ -707,6 +743,7 @@ public class ActiveDirectoryDcLocator {
 			} catch (NamingException e) {
 				LOGGER.log(
 						Level.FINE, e, () -> String.format("Failed to probe server '%s'", hostAddress.getHostString()));
+				if (unusableAddresses != null) unusableAddresses.add(hostAddress);
 			}
 		}
 
