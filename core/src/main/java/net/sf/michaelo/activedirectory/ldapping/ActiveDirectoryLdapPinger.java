@@ -216,7 +216,14 @@ public class ActiveDirectoryLdapPinger {
 
 				try {
 					InputStream is = sock.getInputStream();
+					// A single read() is not guaranteed to return the whole LDAP message: TCP may
+					// deliver it split across multiple segments, in which case this call only
+					// returns the first part and the rest is silently dropped from responseBytes.
 					int len = is.read(responseBytes);
+					if (len == responseBytes.length)
+						throw new CommunicationException(String.format(
+								"LDAP ping response from %s exceeds receive buffer size (%d B)",
+								hostAddress, responseBytes.length));
 					if (len > 0) {
 						responseBytes = Arrays.copyOfRange(responseBytes, 0, len);
 						final byte[] respBytes = responseBytes;
