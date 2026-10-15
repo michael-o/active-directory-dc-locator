@@ -65,6 +65,8 @@ import net.sf.michaelo.activedirectory.ldapping.NetlogonSamLogonExResponse;
  *       {@link Flag#DS_DIRECTORY_SERVICE_PREFERRED}, {@link Flag#DS_GOOD_TIMESERV_PREFERRED} are silently ignored.
  *   <li>Flag {@link Flag#DS_IS_FLAT_NAME} is not supported.
  *   <li>Location via GUID is not supported at all.
+ *   <li>{@link DcLocatorRequest#setSiteName(String)} is ignored when {@link Flag#DS_PDC_REQUIRED} is set, since the
+ *       PDC emulator master registers only a single, domain-wide SRV record with no site-specific equivalent.
  * </ul>
  *
  * <p><b>Note</b>: This class uses JUL to print log messages, enable at least level {@code FINE} to see output.
@@ -174,6 +176,9 @@ public class ActiveDirectoryDcLocator {
 		IGNORED_FLAGS.stream().forEach(f -> {
 			if (validatedFlags.contains(f)) LOGGER.fine(() -> String.format("Flag '%s' is ignored", f));
 		});
+
+		if (validatedFlags.contains(Flag.DS_PDC_REQUIRED) && StringUtils.isNotEmpty(siteName))
+			LOGGER.fine(String.format("Flag '%s' is provided, ignoring site '%s'", Flag.DS_PDC_REQUIRED, siteName));
 
 		IGNORED_CONDITIONAL_FLAGS_SETS.forEach((f, s) -> {
 			if (validatedFlags.contains(f))
@@ -305,7 +310,7 @@ public class ActiveDirectoryDcLocator {
 					siteName,
 					readTimeout);
 		} else if (flags.contains(Flag.DS_PDC_REQUIRED)) {
-			dcInfo = locatePdcServer(dnsLocator, flags, localHostName, domainName, siteName, readTimeout);
+			dcInfo = locatePdcServer(dnsLocator, flags, localHostName, domainName, readTimeout);
 		} else if (flags.contains(Flag.DS_GC_SERVER_REQUIRED)) {
 			dcInfo = locateServer(
 					"ldap", "gc", "GC", dnsLocator, flags, localHostName, domainName, siteName, readTimeout);
@@ -575,7 +580,6 @@ public class ActiveDirectoryDcLocator {
 			Set<Flag> flags,
 			String localHostName,
 			String domainName,
-			String siteName,
 			int readTimeout)
 			throws NamingException {
 		String service = "ldap";
@@ -583,94 +587,52 @@ public class ActiveDirectoryDcLocator {
 		String serviceName = "PDC";
 
 		final String _domainName = domainName;
-		final String _siteName = siteName;
 		LOGGER.fine(() -> {
 			StringBuilder sb = new StringBuilder("Locating ").append(serviceName);
 			sb.append(" server in ");
 			if (StringUtils.isNotEmpty(_domainName))
 				sb.append("domain '").append(_domainName).append("'");
 			else sb.append("default domain");
-			if (StringUtils.isNotEmpty(_siteName))
-				sb.append(" and site '").append(_siteName).append("'");
 
 			return sb.toString();
 		});
 
-		if (StringUtils.isNotEmpty(siteName)) {
-			if (StringUtils.isEmpty(domainName)) {
-				if (!localHostName.contains(PERIOD))
-					throw new NameNotFoundException(String.format(
-							"Failed to extract domain name from unqualified local host name '%s'", localHostName));
-				domainName = localHostName.substring(localHostName.indexOf(PERIOD) + 1);
-			}
-
-			DnsLocatorRequest dnsRequest = new DnsLocatorRequest(service, domainName);
-			dnsRequest.setDcType(dcType);
-			InetSocketAddress[] hostAddresses = null;
-			try {
-				hostAddresses = dnsLocator.locate(dnsRequest);
-			} catch (NamingException e) {
-				throw newNamingException(domainName, siteName, e);
-			}
-
-			NetlogonSamLogonExResponse pingResponse =
-					selectServer(hostAddresses, flags, localHostName, domainName, siteName, readTimeout);
-
-			if (pingResponse == null)
-				throw newNamingException(
-						domainName,
-						siteName,
-						new ServiceUnavailableException(String.format(
-								"Failed to probe %d server%s",
-								hostAddresses.length, hostAddresses.length == 1 ? "" : "s")));
-
-			DomainControllerInfo dcInfo = toDomainControllerInfo(pingResponse, flags, siteName);
-
-			if (LOGGER.isLoggable(Level.FINER))
-				LOGGER.finer(() -> String.format("Located %s server: %s", serviceName, dcInfo));
-			else
-				LOGGER.fine(
-						() -> String.format("Located %s server '%s'", serviceName, dcInfo.getDomainControllerName()));
-
-			return dcInfo;
-		} else {
-			if (StringUtils.isEmpty(domainName)) {
-				if (!localHostName.contains(PERIOD))
-					throw new NameNotFoundException(String.format(
-							"Failed to extract domain name from unqualified local host name '%s'", localHostName));
-				domainName = localHostName.substring(localHostName.indexOf(PERIOD) + 1);
-			}
-
-			DnsLocatorRequest dnsRequest = new DnsLocatorRequest(service, domainName);
-			dnsRequest.setDcType(dcType);
-			InetSocketAddress[] hostAddresses = null;
-			try {
-				hostAddresses = dnsLocator.locate(dnsRequest);
-			} catch (NamingException e) {
-				throw newNamingException(domainName, null, e);
-			}
-
-			NetlogonSamLogonExResponse pingResponse =
-					selectServer(hostAddresses, flags, localHostName, domainName, null, readTimeout);
-
-			if (pingResponse == null)
-				throw newNamingException(
-						domainName,
-						null,
-						new ServiceUnavailableException(String.format(
-								"Failed to probe %d server%s",
-								hostAddresses.length, hostAddresses.length == 1 ? "" : "s")));
-
-			DomainControllerInfo dcInfo = toDomainControllerInfo(pingResponse, flags, null);
-
-			if (LOGGER.isLoggable(Level.FINER))
-				LOGGER.finer(() -> String.format("Located %s server: %s", serviceName, dcInfo));
-			else
-				LOGGER.fine(
-						() -> String.format("Located %s server '%s'", serviceName, dcInfo.getDomainControllerName()));
-
-			return dcInfo;
+		if (StringUtils.isEmpty(domainName)) {
+			if (!localHostName.contains(PERIOD))
+				throw new NameNotFoundException(String.format(
+						"Failed to extract domain name from unqualified local host name '%s'", localHostName));
+			domainName = localHostName.substring(localHostName.indexOf(PERIOD) + 1);
 		}
+
+		DnsLocatorRequest dnsRequest = new DnsLocatorRequest(service, domainName);
+		dnsRequest.setDcType(dcType);
+		InetSocketAddress[] hostAddresses = null;
+		try {
+			hostAddresses = dnsLocator.locate(dnsRequest);
+		} catch (NamingException e) {
+			throw newNamingException(domainName, null, e);
+		}
+
+		NetlogonSamLogonExResponse pingResponse =
+				selectServer(hostAddresses, flags, localHostName, domainName, null, readTimeout);
+
+		if (pingResponse == null)
+			throw newNamingException(
+					domainName,
+					null,
+					new ServiceUnavailableException(String.format(
+							"Failed to probe %d server%s",
+							hostAddresses.length, hostAddresses.length == 1 ? "" : "s")));
+
+		DomainControllerInfo dcInfo = toDomainControllerInfo(pingResponse, flags, null);
+
+		if (LOGGER.isLoggable(Level.FINER))
+			LOGGER.finer(() -> String.format("Located %s server: %s", serviceName, dcInfo));
+		else
+			LOGGER.fine(
+					() -> String.format("Located %s server '%s'", serviceName, dcInfo.getDomainControllerName()));
+
+		return dcInfo;
 	}
 
 	// TODO Do we need a 'boolean tryClosestServer' when we are querying non-site servers?
