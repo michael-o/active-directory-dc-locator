@@ -418,8 +418,8 @@ public class ActiveDirectoryDcLocator {
 				throw newNamingException(domainName, null, e);
 			}
 
-			NetlogonSamLogonExResponse pingResponse = selectServer(
-					hostAddresses, EnumSet.noneOf(Flag.class), localHostName, domainName, null, readTimeout);
+			NetlogonSamLogonExResponse pingResponse =
+					selectServer(hostAddresses, flags, localHostName, domainName, null, readTimeout);
 
 			if (pingResponse == null)
 				throw newNamingException(
@@ -446,6 +446,21 @@ public class ActiveDirectoryDcLocator {
 					return sb.toString();
 				} else return "Client has no default site";
 			});
+
+			// The contacted server was already screened against the request's flags above (see
+			// SERVER_SELECTION_FLAGS) and sits in the client's own site, so no need to repeat
+			// discovery for it.
+			if (StringUtils.isNotEmpty(siteName) && siteName.equalsIgnoreCase(pingResponse.getDcSiteName())) {
+				DomainControllerInfo dcInfo = toDomainControllerInfo(pingResponse, flags, siteName);
+
+				if (LOGGER.isLoggable(Level.FINER))
+					LOGGER.finer(() -> String.format("Located %s server: %s", serviceName, dcInfo));
+				else
+					LOGGER.fine(() -> String.format(
+							"Located %s server '%s'", serviceName, dcInfo.getDomainControllerName()));
+
+				return dcInfo;
+			}
 
 			pingResponse = null;
 			int locatedServersCount = 0;
