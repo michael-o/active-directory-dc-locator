@@ -84,9 +84,13 @@ public class NetlogonSamLogonExResponse extends NetlogonSamLogonBaseResponse {
 		// NtVersion
 		// We need to parse this field ahead of time to know whether the response has DcSockAddr and NextClosestSiteName
 		int pos = ((Buffer) buf).position();
-		((Buffer) buf).position(buf.limit() - 8);
-		this.ntVersion = getNtVersion(buf, NETLOGON_NT_VERSION_5EX);
-		((Buffer) buf).position(pos);
+		if (buf.limit() - 8 < pos)
+			throw new IllegalArgumentException(String.format(
+					"Buffer has not enough bytes (%d) to contain NtVersion and LmNtToken/Lm20Token",
+					buf.remaining()));
+		ByteBuffer ntVersionPeek = buf.duplicate();
+		((Buffer) ntVersionPeek).position(buf.limit() - 8);
+		this.ntVersion = getNtVersion(ntVersionPeek, NETLOGON_NT_VERSION_5EX);
 		if (this.ntVersion.contains(NetlogonNtVersion.V5EP)) {
 			// DcSockAddrSize
 			buf.get();
