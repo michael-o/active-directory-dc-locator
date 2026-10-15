@@ -51,7 +51,7 @@
 	<scm>
 		<connection>scm:git:https://github.com/michael-o/active-directory-dc-locator.git</connection>
 		<developerConnection>scm:git:https://github.com/michael-o/active-directory-dc-locator.git</developerConnection>
-		<tag>0.5.1</tag>
+		<tag>main</tag>
 		<url>https://github.com/michael-o/active-directory-dc-locator</url>
 	</scm>
 
