@@ -20,7 +20,7 @@
 	<parent>
 		<groupId>net.sf.michael-o</groupId>
 		<artifactId>michael-o-parent</artifactId>
-		<version>20</version>
+		<version>21</version>
 	</parent>
 
 	<groupId>net.sf.michael-o.active-directory</groupId>
@@ -108,7 +108,7 @@
 								<artifactItem>
 									<groupId>net.sf.michael-o</groupId>
 									<artifactId>michael-o-parent</artifactId>
-									<version>20</version>
+									<version>21</version>
 									<classifier>site-resources</classifier>
 									<type>zip</type>
 									<overWrite>true</overWrite>
