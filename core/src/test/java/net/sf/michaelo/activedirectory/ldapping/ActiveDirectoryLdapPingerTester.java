@@ -55,8 +55,8 @@ import net.sf.michaelo.dirctxsrc.DirContextSource;
  *
  * <ul>
  *   <li>{@code threads}: Amount of threads running in parallel with LDAP ping requests. Default is 1
- *   <li>{@code protocol}: Protocol to perform LDAP ping request, either {@code tcp} or {@code udp}. Default is
- *       {@code udp}
+ *   <li>{@code protocol}: Protocol to perform LDAP ping request, either {@code tcp} or {@code udp}. Only applies to
+ *       {@code pingType} {@code plain}; JNDI always uses TCP. Default is {@code udp}
  *   <li>{@code pingType}: Whether LDAP ping will be sent by {@code plain} (raw) means or via {@code JNDI} (LDAP),
  *       case-insensitive, no other value is accepted. Default is {@code plain}
  *   <li>{@code connectTimeout}: Time in milliseconds to wait for a DC to connect (TCP only). Default is 1000
@@ -129,7 +129,7 @@ public class ActiveDirectoryLdapPingerTester {
 
 				for (String dnsHostName : dnsHostNames) {
 					LdapPingRequest request = new LdapPingRequest(hostName, ntVersion);
-					request.setProtocol(System.getProperty("protocol", "udp"));
+					if (pingType.equalsIgnoreCase("plain")) request.setProtocol(System.getProperty("protocol", "udp"));
 					request.setDnsDomain(dnsDomain);
 					request.setDnsHostName(dnsHostName);
 					request.setConnectTimeout(Integer.getInteger("connectTimeout", 1000));
@@ -162,8 +162,6 @@ public class ActiveDirectoryLdapPingerTester {
 	}
 
 	private static byte[] jndiPing(LdapPingRequest request) throws NamingException {
-		if (!request.getProtocol().equalsIgnoreCase("tcp")) return null;
-
 		DirContextSource contextSource = new DirContextSource.Builder("ldap://" + request.getHostName())
 				.debug(false)
 				.derefAliases("never")
