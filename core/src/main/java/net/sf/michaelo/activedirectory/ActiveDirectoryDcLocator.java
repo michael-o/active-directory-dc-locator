@@ -643,7 +643,6 @@ public class ActiveDirectoryDcLocator {
 		return dcInfo;
 	}
 
-	// TODO Do we need a 'boolean tryClosestServer' when we are querying non-site servers?
 	private NetlogonSamLogonExResponse selectServer(
 			InetSocketAddress[] hostAddresses,
 			Set<Flag> flags,
