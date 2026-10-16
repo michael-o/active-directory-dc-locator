@@ -120,9 +120,12 @@ public class ActiveDirectoryDcLocatorTester {
 				Future<String> future =
 						completionService.poll(Integer.getInteger("pollTimeout", 5000), TimeUnit.MILLISECONDS);
 				if (future != null) {
-					String result = future.get();
 					futures.remove(future);
-					System.out.println(result);
+					try {
+						System.out.println(future.get());
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 
 				if (futures.isEmpty()) break;
