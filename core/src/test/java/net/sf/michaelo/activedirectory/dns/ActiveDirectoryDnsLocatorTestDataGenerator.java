@@ -18,6 +18,7 @@ package net.sf.michaelo.activedirectory.dns;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,8 +26,9 @@ import java.util.List;
 
 /**
  * Test data generator for {@link ActiveDirectoryDnsLocatorTester}. It reads a domain file ({@code /domains.txt}) from
- * the class path or any path from arguments. The file contains one domain per line. The output is written to standard
- * output.
+ * the class path or any path from arguments. The file contains one domain per line. Then it reads a sites-per-domain
+ * file (<code>/sites-{domain}.txt</code>) from the class path or a file system path as a sibling to the domains file.
+ * The file contains one site per line. The output is written to standard output.
  */
 public class ActiveDirectoryDnsLocatorTestDataGenerator {
 
@@ -54,13 +56,32 @@ public class ActiveDirectoryDnsLocatorTestDataGenerator {
 
 		List<String> domains = Files.readAllLines(domainsFile);
 
-		for (String service : SERVICES) {
-			for (String protocol : PROTOCOLS) {
-				for (String dcType : DC_TYPES) {
-					for (String domain : domains) {
-						for (String dnsDomain : DNS_DOMAINS) {
-							String domainName = dnsDomain.replace("${domain}", domain);
-							System.out.printf("%s;%s;;%s;%s%n", service, protocol, dcType, domainName);
+		for (String domain : domains) {
+			Path sitesFile = null;
+			if (domainsFile.getFileSystem().equals(FileSystems.getDefault())) {
+				sitesFile = domainsFile.resolveSibling("sites-" + domain + ".txt");
+				if (Files.notExists(sitesFile)) {
+					System.err.println("Domain sites file '" + sitesFile + "' does not exist");
+					System.exit(1);
+				}
+			} else {
+				URL sitesClasspathUrl =
+						ActiveDirectoryDnsLocatorTestDataGenerator.class.getResource("/sites-" + domain + ".txt");
+				if (sitesClasspathUrl == null) {
+					System.err.println("Domain sites classpath resource '/sites-" + domain + ".txt' does not exist");
+					System.exit(1);
+				}
+				sitesFile = Paths.get(sitesClasspathUrl.toURI());
+			}
+
+			for (String service : SERVICES) {
+				for (String protocol : PROTOCOLS) {
+					for (String site : Files.readAllLines(sitesFile)) {
+						for (String dcType : DC_TYPES) {
+							for (String dnsDomain : DNS_DOMAINS) {
+								String domainName = dnsDomain.replace("${domain}", domain);
+								System.out.printf("%s;%s;%s;%s;%s%n", service, protocol, site, dcType, domainName);
+							}
 						}
 					}
 				}
