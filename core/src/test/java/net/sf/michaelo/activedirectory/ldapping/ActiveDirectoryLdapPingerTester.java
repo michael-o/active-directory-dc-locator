@@ -57,8 +57,8 @@ import net.sf.michaelo.dirctxsrc.DirContextSource;
  *   <li>{@code threads}: Amount of threads running in parallel with LDAP ping requests. Default is 1
  *   <li>{@code protocol}: Protocol to perform LDAP ping request, either {@code tcp} or {@code udp}. Default is
  *       {@code udp}
- *   <li>{@code pingType}: Whether LDAP ping will be sent by {@code plain} (raw) means or via {@code JNDI} (LDAP).
- *       Default is {@code plain}
+ *   <li>{@code pingType}: Whether LDAP ping will be sent by {@code plain} (raw) means or via {@code JNDI} (LDAP),
+ *       case-insensitive, no other value is accepted. Default is {@code plain}
  *   <li>{@code connectTimeout}: Time in milliseconds to wait for a DC to connect (TCP only). Default is 1000
  *   <li>{@code readTimeout}: Time in milliseconds to wait for a DC to respond. Default is 1000
  *   <li>{@code pollTimeout}: Time in milliseconds to wait for a thread to complete. Default is 5000
@@ -105,6 +105,12 @@ public class ActiveDirectoryLdapPingerTester {
 			System.exit(1);
 		}
 
+		String pingType = System.getProperty("pingType", "plain");
+		if (!pingType.equalsIgnoreCase("plain") && !pingType.equalsIgnoreCase("JNDI")) {
+			System.err.println("pingType must be either 'plain' or 'JNDI', but is '" + pingType + "'");
+			System.exit(1);
+		}
+
 		String[] dnsHostNames = {"", getFullyQualifiedLocalHostName()};
 
 		ExecutorService executorService = Executors.newFixedThreadPool(Integer.getInteger("threads", 1));
@@ -128,7 +134,6 @@ public class ActiveDirectoryLdapPingerTester {
 					request.setDnsHostName(dnsHostName);
 					request.setConnectTimeout(Integer.getInteger("connectTimeout", 1000));
 					request.setReadTimeout(Integer.getInteger("readTimeout", 1000));
-					String pingType = System.getProperty("pingType", "plain");
 					String responseLine =
 							String.format("%s;%s;%s;%s;%s;", domain, hostName, dnsDomain, dnsHostName, ntVersionStr);
 
