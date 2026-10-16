@@ -176,50 +176,62 @@ public class ActiveDirectoryLdapPingerTester {
 				.build();
 
 		DirContext ctx = contextSource.getDirContext();
-		SearchControls ctls = new SearchControls();
-		ctls.setSearchScope(SearchControls.OBJECT_SCOPE);
-		ctls.setReturningAttributes(new String[] {NETLOGON_LDAP_ATTRIBUTE});
-		byte[] ntVersionBytes = ByteBuffer.allocate(4)
-				.order(ByteOrder.LITTLE_ENDIAN)
-				.putInt(IntFlag.toFlags(request.getNtVersion()))
-				.array();
-		int idx = 0;
-		StringBuilder filterExpr = new StringBuilder("(&");
-		List<Object> filterArgs = new ArrayList<>();
-		filterExpr.append("(NtVer={").append(idx++).append("})");
-		filterArgs.add(ntVersionBytes);
-		if (StringUtils.isNotEmpty(request.getDnsDomain())) {
-			filterExpr.append("(DnsDomain={").append(idx++).append("})");
-			filterArgs.add(request.getDnsDomain());
-		}
-		if (StringUtils.isNotEmpty(request.getHost())) {
-			filterExpr.append("(Host={").append(idx++).append("})");
-			filterArgs.add(request.getHost());
-		}
-		if (StringUtils.isNotEmpty(request.getDnsHostName())) {
-			filterExpr.append("(DnsHostName={").append(idx++).append("})");
-			filterArgs.add(request.getDnsHostName());
-		}
-		filterExpr.append(")");
+		try {
+			SearchControls ctls = new SearchControls();
+			ctls.setSearchScope(SearchControls.OBJECT_SCOPE);
+			ctls.setReturningAttributes(new String[] {NETLOGON_LDAP_ATTRIBUTE});
+			byte[] ntVersionBytes = ByteBuffer.allocate(4)
+					.order(ByteOrder.LITTLE_ENDIAN)
+					.putInt(IntFlag.toFlags(request.getNtVersion()))
+					.array();
+			int idx = 0;
+			StringBuilder filterExpr = new StringBuilder("(&");
+			List<Object> filterArgs = new ArrayList<>();
+			filterExpr.append("(NtVer={").append(idx++).append("})");
+			filterArgs.add(ntVersionBytes);
+			if (StringUtils.isNotEmpty(request.getDnsDomain())) {
+				filterExpr.append("(DnsDomain={").append(idx++).append("})");
+				filterArgs.add(request.getDnsDomain());
+			}
+			if (StringUtils.isNotEmpty(request.getHost())) {
+				filterExpr.append("(Host={").append(idx++).append("})");
+				filterArgs.add(request.getHost());
+			}
+			if (StringUtils.isNotEmpty(request.getDnsHostName())) {
+				filterExpr.append("(DnsHostName={").append(idx++).append("})");
+				filterArgs.add(request.getDnsHostName());
+			}
+			filterExpr.append(")");
 
-		NamingEnumeration<SearchResult> search =
-				ctx.search("", filterExpr.toString(), filterArgs.toArray(new Object[0]), ctls);
+			NamingEnumeration<SearchResult> search =
+					ctx.search("", filterExpr.toString(), filterArgs.toArray(new Object[0]), ctls);
+			try {
+				byte[] netlogonBytes = null;
+				while (search.hasMore()) {
+					SearchResult result = search.next();
+					if (netlogonBytes == null)
+						netlogonBytes = (byte[])
+								result.getAttributes().get(NETLOGON_LDAP_ATTRIBUTE).get();
+					else {
+						// TODO log duplicate/ignore
+					}
+				}
 
-		byte[] netlogonBytes = null;
-		while (search.hasMore()) {
-			SearchResult result = search.next();
-			if (netlogonBytes == null)
-				netlogonBytes = (byte[])
-						result.getAttributes().get(NETLOGON_LDAP_ATTRIBUTE).get();
-			else {
-				// TODO log duplicate/ignore
+				return netlogonBytes;
+			} finally {
+				try {
+					search.close();
+				} catch (NamingException e) {
+					// ignore
+				}
+			}
+		} finally {
+			try {
+				ctx.close();
+			} catch (NamingException e) {
+				// ignore
 			}
 		}
-
-		search.close();
-		ctx.close();
-
-		return netlogonBytes;
 	}
 
 	private static byte[] plainPing(LdapPingRequest request) throws NamingException {
