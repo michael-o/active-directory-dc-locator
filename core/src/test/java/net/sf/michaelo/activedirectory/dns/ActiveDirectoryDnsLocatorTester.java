@@ -32,8 +32,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import javax.naming.NamingException;
-
 /**
  * Tester for {@link ActiveDirectoryDnsLocator}. Consumes data produced by
  * {@link ActiveDirectoryDnsLocatorTestDataGenerator} from arguments and writes result to standard output.
@@ -65,7 +63,7 @@ public class ActiveDirectoryDnsLocatorTester {
 			try {
 				InetSocketAddress[] hosts = locator.locate(request);
 				responseLine += Arrays.toString(hosts);
-			} catch (NamingException e) {
+			} catch (Exception e) {
 				responseLine += "exception:" + e;
 			}
 
