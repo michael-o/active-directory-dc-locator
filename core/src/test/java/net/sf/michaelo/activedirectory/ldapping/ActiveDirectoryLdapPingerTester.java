@@ -94,7 +94,7 @@ public class ActiveDirectoryLdapPingerTester {
 
 	private static final String NETLOGON_LDAP_ATTRIBUTE = "Netlogon";
 
-	public static void main(String[] args) throws IOException, NamingException {
+	public static void main(String[] args) throws IOException {
 		if (args.length == 0) {
 			System.err.println("No arguments provided");
 			System.exit(1);

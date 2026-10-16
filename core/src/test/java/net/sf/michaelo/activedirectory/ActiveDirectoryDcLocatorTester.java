@@ -33,8 +33,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import javax.naming.NamingException;
-
 import net.sf.michaelo.activedirectory.DcLocatorRequest.Flag;
 
 /**
@@ -75,7 +73,7 @@ public class ActiveDirectoryDcLocatorTester {
 		}
 	}
 
-	public static void main(String[] args) throws IOException, NamingException {
+	public static void main(String[] args) throws IOException {
 		if (args.length == 0) {
 			System.err.println("No arguments provided");
 			System.exit(1);

@@ -24,8 +24,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import net.sf.michaelo.activedirectory.dns.ActiveDirectoryDnsLocatorTestDataGenerator;
-
 /**
  * Test data generator for {@link ActiveDirectoryLdapPingerTester}. It reads a domain file ({@code /domains.txt}) from
  * the class path or a file system path from arguments. The file contains one domain per line. Then it reads a
@@ -58,7 +56,7 @@ public class ActiveDirectoryLdapPingerTestDataGenerator {
 				System.exit(1);
 			}
 		} else {
-			URL domainsClasspathUrl = ActiveDirectoryDnsLocatorTestDataGenerator.class.getResource("/domains.txt");
+			URL domainsClasspathUrl = ActiveDirectoryLdapPingerTestDataGenerator.class.getResource("/domains.txt");
 			if (domainsClasspathUrl == null) {
 				System.err.println("Domains classpath resource '/domains.txt' does not exist");
 				System.exit(1);
@@ -78,7 +76,7 @@ public class ActiveDirectoryLdapPingerTestDataGenerator {
 				}
 			} else {
 				URL hostNamesClasspathUrl =
-						ActiveDirectoryDnsLocatorTestDataGenerator.class.getResource("/hostnames-" + domain + ".txt");
+						ActiveDirectoryLdapPingerTestDataGenerator.class.getResource("/hostnames-" + domain + ".txt");
 				if (hostNamesClasspathUrl == null) {
 					System.err.println(
 							"Domain host names classpath resource '/hostnames-" + domain + ".txt' does not exist");
