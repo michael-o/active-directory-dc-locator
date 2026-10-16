@@ -219,6 +219,10 @@ public class ActiveDirectoryLdapPinger {
 					// A single read() is not guaranteed to return the whole LDAP message: TCP may
 					// deliver it split across multiple segments, in which case this call only
 					// returns the first part and the rest is silently dropped from responseBytes.
+					// A correct fix would loop until the ASN.1-declared message length is fully read
+					// (as e.g. Samba's tldap client does), but that would make this path diverge from
+					// the UDP branch's single-receive() model. Deliberately left as-is until real
+					// fragmentation is observed in practice.
 					int len = is.read(responseBytes);
 					if (len == responseBytes.length)
 						throw new CommunicationException(String.format(
