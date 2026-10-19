@@ -95,7 +95,7 @@
 <a class="jxr_linenumber" name="L87" href="#L87">87</a>  		<strong class="jxr_keyword">if</strong> (buf.limit() - 8 &lt; pos)
 <a class="jxr_linenumber" name="L88" href="#L88">88</a>  			<strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalArgumentException(String.format(
 <a class="jxr_linenumber" name="L89" href="#L89">89</a>  					<span class="jxr_string">"Buffer has not enough bytes (%d) to contain NtVersion and LmNtToken/Lm20Token"</span>, buf.remaining()));
-<a class="jxr_linenumber" name="L90" href="#L90">90</a>  		ByteBuffer ntVersionPeek = buf.duplicate();
+<a class="jxr_linenumber" name="L90" href="#L90">90</a>  		ByteBuffer ntVersionPeek = buf.duplicate().order(buf.order());
 <a class="jxr_linenumber" name="L91" href="#L91">91</a>  		((Buffer) ntVersionPeek).position(buf.limit() - 8);
 <a class="jxr_linenumber" name="L92" href="#L92">92</a>  		<strong class="jxr_keyword">this</strong>.ntVersion = getNtVersion(ntVersionPeek, NETLOGON_NT_VERSION_5EX);
 <a class="jxr_linenumber" name="L93" href="#L93">93</a>  		<strong class="jxr_keyword">if</strong> (<strong class="jxr_keyword">this</strong>.ntVersion.contains(NetlogonNtVersion.V5EP)) {
