@@ -210,8 +210,9 @@ public class ActiveDirectoryLdapPingerTester {
 				while (search.hasMore()) {
 					SearchResult result = search.next();
 					if (netlogonBytes == null)
-						netlogonBytes = (byte[])
-								result.getAttributes().get(NETLOGON_LDAP_ATTRIBUTE).get();
+						netlogonBytes = (byte[]) result.getAttributes()
+								.get(NETLOGON_LDAP_ATTRIBUTE)
+								.get();
 					else {
 						// TODO log duplicate/ignore
 					}

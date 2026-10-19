@@ -414,7 +414,7 @@ public class ActiveDirectoryLdapPinger {
 				byte[] value = (byte[]) searchResultsIter.next();
 				parser = new Asn1Parser(value);
 				switch (tagNumber) {
-						// SearchResultEntry
+					// SearchResultEntry
 					case ASN1_LDAP_MESSAGE_SEARCH_RESULT_ENTRY_TAG_NUMBER:
 						// objectName
 						parser.parseOctetString();
@@ -443,7 +443,7 @@ public class ActiveDirectoryLdapPinger {
 							}
 						}
 						break;
-						// SearchResultDone:LDAPResult
+					// SearchResultDone:LDAPResult
 					case ASN1_LDAP_MESSAGE_SEARCH_RESULT_DONE_TAG_NUMBER:
 						// resultCode
 						parser.parseTag(ASN1_ENUMERATED_TAG);
