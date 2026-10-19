@@ -87,7 +87,7 @@ public class NetlogonSamLogonExResponse extends NetlogonSamLogonBaseResponse {
 		if (buf.limit() - 8 < pos)
 			throw new IllegalArgumentException(String.format(
 					"Buffer has not enough bytes (%d) to contain NtVersion and LmNtToken/Lm20Token", buf.remaining()));
-		ByteBuffer ntVersionPeek = buf.duplicate();
+		ByteBuffer ntVersionPeek = buf.duplicate().order(buf.order());
 		((Buffer) ntVersionPeek).position(buf.limit() - 8);
 		this.ntVersion = getNtVersion(ntVersionPeek, NETLOGON_NT_VERSION_5EX);
 		if (this.ntVersion.contains(NetlogonNtVersion.V5EP)) {
